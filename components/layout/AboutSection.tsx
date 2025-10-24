@@ -40,7 +40,6 @@ export const AboutSection = () => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* About Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
@@ -56,7 +55,6 @@ export const AboutSection = () => {
               chúng tôi cam kết đồng hành cùng bạn trong hành trình chăm sóc sức khỏe.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 ">
-              {/* Use variant="ghost" so Button doesn't force a default bg and custom bg utility wins */}
               <Button
                  variant="ghost"
                  className="bg-[#92D7EE] "

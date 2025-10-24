@@ -44,7 +44,6 @@ export const Banner = () => {
     <section className="relative bg-[url('/images/background.jpg')] bg-cover bg-center">
       <div className="absolute inset-0 bg-black/40" />
       
-      {/* Đã xóa min-h-screen và đổi lại thành py-32 */}
       <div className="relative z-10 py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -78,14 +77,13 @@ export const Banner = () => {
     return (
       <div
         key={index}
-        // THAY ĐỔI: Dùng nền bán trong suốt, thêm hiệu ứng mờ và viền nhẹ
         className="bg-white/10 backdrop-blur-sm rounded-lg p-6 shadow-lg hover:bg-white/20 transition-all cursor-pointer border border-white/20"
         onClick={() => router.push(action.href)}
       >
         <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center mb-4 mx-auto`}>
           <Icon className="w-6 h-6 text-white" />
         </div>
-        {/* THAY ĐỔI: Chữ sáng màu */}
+
         <h3 className="text-lg font-semibold text-white mb-2">
           {action.title}
         </h3>
