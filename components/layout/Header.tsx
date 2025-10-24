@@ -108,7 +108,8 @@ export const Header = () => {
                   <Button 
                     size="sm"
                     variant="ghost"
-                    className="bg-[#92D7EE] text-black hover:bg-[#92D7EE]/90"
+                    // className="bg-[#92D7EE] text-black hover:bg-[#92D7EE]/90"
+                    className="text-gray-900 hover:bg-[#F7D800] hover:text-black"
                   >
                     Đăng ký
                   </Button>

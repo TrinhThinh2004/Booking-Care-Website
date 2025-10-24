@@ -22,21 +22,21 @@ export const Banner = () => {
       title: 'Đặt lịch khám',
       description: 'Đặt lịch với bác sĩ chuyên khoa',
       href: '/booking',
-      color: 'bg-blue-500'
+      color: 'bg-[#92D7EE]'
     },
     {
       icon: MapPin,
       title: 'Tìm phòng khám',
       description: 'Tìm phòng khám gần bạn',
       href: '/clinics',
-      color: 'bg-green-500'
+      color: 'bg-[#92D7EE]'
     },
     {
       icon: Clock,
       title: 'Lịch hẹn của tôi',
       description: 'Xem lịch hẹn đã đặt',
       href: '/my-bookings',
-      color: 'bg-purple-500'
+      color: 'bg-[#92D7EE]'
     }
   ]
 
@@ -50,7 +50,7 @@ export const Banner = () => {
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
               Chăm sóc sức khỏe
-              <span className="text-blue-600 block">tại nhà</span>
+              <span className="text-amber-400 block">tại nhà</span>
             </h1>
             <p className="text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
               Đặt lịch khám bệnh trực tuyến với bác sĩ chuyên khoa hàng đầu. 
@@ -72,28 +72,30 @@ export const Banner = () => {
               </div>
             </form>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {quickActions.map((action, index) => {
-                const Icon = action.icon
-                return (
-                  <div
-                    key={index}
-                    className="bg-[#EFEFEF] rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => router.push(action.href)}
-                  >
-                    <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center mb-4 mx-auto`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {action.title}
-                    </h3>
-                    <p className="text-gray-600">
-                      {action.description}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+  {quickActions.map((action, index) => {
+    const Icon = action.icon
+    return (
+      <div
+        key={index}
+        // THAY ĐỔI: Dùng nền bán trong suốt, thêm hiệu ứng mờ và viền nhẹ
+        className="bg-white/10 backdrop-blur-sm rounded-lg p-6 shadow-lg hover:bg-white/20 transition-all cursor-pointer border border-white/20"
+        onClick={() => router.push(action.href)}
+      >
+        <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center mb-4 mx-auto`}>
+          <Icon className="w-6 h-6 text-white" />
+        </div>
+        {/* THAY ĐỔI: Chữ sáng màu */}
+        <h3 className="text-lg font-semibold text-white mb-2">
+          {action.title}
+        </h3>
+        <p className="text-gray-200">
+          {action.description}
+        </p>
+      </div>
+    )
+  })}
+</div>
           </div>
         </div>
       </div>
