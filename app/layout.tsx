@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Booking Care - Đặt lịch khám bệnh',
   description: 'Hệ thống đặt lịch khám bệnh trực tuyến, kết nối bệnh nhân với bác sĩ chuyên khoa',
+  icons: {
+    icon: '/bookingcare.svg',
+  },
   keywords: 'đặt lịch khám, bác sĩ, bệnh viện, chuyên khoa, y tế',
 }
 
@@ -18,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
       <body className={inter.className}>
         <AuthProvider>
           {children}

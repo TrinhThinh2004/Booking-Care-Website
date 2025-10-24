@@ -2,7 +2,8 @@ import Link from 'next/link'
 import { Phone, Mail, MapPin } from 'lucide-react'
 
 export const Footer = () => {
-  const currentYear = new Date().getFullYear()
+  // Use a fixed year to avoid hydration mismatch
+  const currentYear = 2025
 
   const footerLinks = {
     company: [

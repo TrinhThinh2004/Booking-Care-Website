@@ -1,16 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/auth/authStore'
 import { Button } from '@/components/ui/Button'
-import { Stethoscope, Menu, X, User, LogOut } from 'lucide-react'
-// 1. Xóa 'Image' từ 'next/image' vì không còn dùng
-// import Image from 'next/image' 
+import { User, LogOut } from 'lucide-react'
 
 export const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { user, isAuthenticated, logout } = useAuthStore()
   const router = useRouter()
 
@@ -28,23 +24,19 @@ export const Header = () => {
   ]
 
   return (
-    // Bạn có thể đổi lại màu nền ở đây nếu muốn, ví dụ: bg-[#EDFFFA]
-    <header className="bg-white shadow-sm border-b border-gray-200">
+   <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
-          {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              {/* 2. Thay thế <Image> bằng SVG */}
               <svg
                 viewBox="0 0 666.63 146.21"
-                // 3. Sử dụng className để kiểm soát kích thước
                 className="w-[200px] h-[43px] select-none"
               >
                 <path
                   d="M73.11 41.43a31.68 31.68 0 1 0 31.68 31.68 31.68 31.68 0 0 0-31.68-31.68m19.9 38H79.43v13.65H66.78V79.43H53.21V66.78h13.57V53.13h12.65v13.65H93Z"
-                  fill="#49bce2"
+                  fill="#49bce3"
                 ></path>
                 <path
                   d="M73.11 125.24A52.13 52.13 0 0 1 21 74.49V21.88a73.09 73.09 0 1 0 107.67 98.74L112.71 107a52 52 0 0 1-39.6 18.24M73.11 0A72.82 72.82 0 0 0 44.3 5.91l-.3.15a3.76 3.76 0 0 0-2.13 3.37v22A52.14 52.14 0 0 1 113.36 40l16.19-13.33A73 73 0 0 0 73.11 0"
@@ -58,26 +50,24 @@ export const Header = () => {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+                className="text-gray-900 hover:bg-[#F7D800] hover:text-black px-3 py-2 text-sm font-medium transition-colors rounded-md"
               >
                 {item.name}
               </Link>
             ))}
           </nav>
 
-          {/* Desktop Auth */}
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
-                  <User className="w-5 h-5 text-gray-500" />
-                  <span className="text-sm text-gray-700">
+                  <User className="w-5 h-5 text-gray-800" />
+                  <span className="text-sm text-gray-900">
                     {user?.firstName} {user?.lastName}
                   </span>
                 </div>
@@ -93,93 +83,42 @@ export const Header = () => {
                     Dashboard
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleLogout} 
+                  className="text-gray-900 hover:bg-[#F7D800] hover:text-black"
+                >
                   <LogOut className="w-4 h-4" />
                 </Button>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
                 <Link href="/login">
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-gray-900 hover:bg-[#F7D800] hover:text-black"
+                  >
                     Đăng nhập
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm">
+
+                  <Button 
+                    size="sm"
+                    variant="ghost"
+                    className="bg-[#92D7EE] text-black hover:bg-[#92D7EE]/90"
+                  >
                     Đăng ký
                   </Button>
                 </Link>
               </div>
             )}
           </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-blue-600 p-2"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+          
         </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              
-              {/* Mobile Auth */}
-              <div className="pt-4 border-t border-gray-200">
-                {isAuthenticated ? (
-                  <div className="space-y-2">
-                    <div className="px-3 py-2 text-sm text-gray-700">
-                      {user?.firstName} {user?.lastName}
-                    </div>
-                    {user?.role === 'ADMIN' && (
-                      <Link href="/admin" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="outline" size="sm" className="w-full mb-2">
-                          Quản trị
-                        </Button>
-                      </Link>
-                    )}
-                    <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="outline" size="sm" className="w-full mb-2">
-                        Dashboard
-                      </Button>
-                    </Link>
-                    <Button variant="ghost" size="sm" onClick={handleLogout} className="w-full">
-                      Đăng xuất
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="ghost" size="sm" className="w-full">
-                        Đăng nhập
-                      </Button>
-                    </Link>
-                    <Link href="/register" onClick={() => setIsMenuOpen(false)}>
-                      <Button size="sm" className="w-full">
-                        Đăng ký
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        
       </div>
     </header>
   )
