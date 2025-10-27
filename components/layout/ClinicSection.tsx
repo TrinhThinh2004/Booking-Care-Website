@@ -25,7 +25,6 @@ export const ClinicSection = () => {
   const router = useRouter()
 
   useEffect(() => {
-    // Mock data - replace with actual API call
     const mockClinics: Clinic[] = [
       {
         id: 1,
@@ -34,7 +33,7 @@ export const ClinicSection = () => {
         phone: '024 1234 5678',
         rating: 4.8,
         reviewCount: 234,
-        image: '/images/clinic-1.jpg',
+        image: 'anviet.png',
         specialties: ['Tim mạch', 'Nhi khoa', 'Xương khớp'],
         openHours: '7:00 - 20:00'
       },
@@ -45,7 +44,7 @@ export const ClinicSection = () => {
         phone: '024 3927 5568',
         rating: 4.7,
         reviewCount: 189,
-        image: '/images/clinic-2.jpg',
+        image: 'anduc.png',
         specialties: ['Sản phụ khoa', 'Nhi khoa', 'Tim mạch'],
         openHours: '24/7'
       },
@@ -56,7 +55,7 @@ export const ClinicSection = () => {
         phone: '024 3843 8888',
         rating: 4.9,
         reviewCount: 156,
-        image: '/images/clinic-3.jpg',
+        image: 'anviet.png',
         specialties: ['Mắt', 'Thần kinh'],
         openHours: '8:00 - 18:00'
       },
@@ -67,7 +66,7 @@ export const ClinicSection = () => {
         phone: '024 6273 8532',
         rating: 4.8,
         reviewCount: 312,
-        image: '/images/clinic-4.jpg',
+        image: 'anviet.png',
         specialties: ['Nhi khoa', 'Sản phụ khoa'],
         openHours: '24/7'
       }
@@ -82,6 +81,7 @@ export const ClinicSection = () => {
   const handleClinicClick = (clinicId: number) => {
     router.push(`/clinics/${clinicId}`)
   }
+
 
   if (isLoading) {
     return (
@@ -111,21 +111,33 @@ export const ClinicSection = () => {
           {clinics.map((clinic) => (
             <Card
               key={clinic.id}
-              className="hover:shadow-lg transition-all duration-200 cursor-pointer group overflow-hidden"
+              className="hover:shadow-lg transition-all duration-200 cursor-pointer group overflow-hidden flex flex-col"
               onClick={() => handleClinicClick(clinic.id)}
             >
-              <div className="h-48 bg-gradient-to-r from-[#92D7EE] to-[#4B6CB7] flex items-center justify-center">
-                <div className="text-center text-white">
-                  <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full mx-auto mb-2 flex items-center justify-center">
-                    <span className="text-2xl font-bold">
+           
+              <div className="h-40 w-full bg-white p-4 border-b"> 
+                {clinic.image ? (
+                  <img
+                    src={`/images/clinic/${clinic.image}`}
+                    alt={clinic.name}
+                    className="w-full h-full object-contain" 
+                  />
+                ) : (
+                  <div className="h-full bg-gradient-to-r from-[#92D7EE] to-[#4B6CB7] flex items-center justify-center rounded-lg">
+                    <span className="text-2xl font-bold text-white">
                       {clinic.name.charAt(0)}
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold">{clinic.name}</h3>
-                </div>
+                )}
               </div>
               
-              <CardContent className="p-6">
+  
+              <CardContent className="p-6 flex flex-col flex-grow"> 
+                
+                <h3 className="text-xl font-semibold text-gray-900 mb-4 line-clamp-2">
+                  {clinic.name}
+                </h3>
+
                 <div className="space-y-3 mb-4">
                   <div className="flex items-start text-sm text-gray-600">
                     <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
@@ -149,12 +161,12 @@ export const ClinicSection = () => {
                 </div>
 
                 <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Chuyên khoa:</p>
+                  <p className="text-sm font-medium text-mb-2">Chuyên khoa:</p>
                   <div className="flex flex-wrap gap-1">
                     {clinic.specialties.map((specialty, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 bg-[#92D7EE] text-[#4B6CB7] text-xs rounded-full"
+                        className="px-2 py-1 bg-[#EFEFEF] text-xs text-black rounded-full font-medium" 
                       >
                         {specialty}
                       </span>
@@ -163,8 +175,8 @@ export const ClinicSection = () => {
                 </div>
 
                 <Button
-                  variant="outline"
-                  className="w-full group-hover:bg-[#4B6CB7] transition-colors"
+                  variant="ghost"
+                  className="w-full transition-colors mt-auto bg-[#92D7EE] " 
                 >
                   Xem chi tiết
                 </Button>
@@ -172,7 +184,6 @@ export const ClinicSection = () => {
             </Card>
           ))}
         </div>
-
         <div className="text-center mt-12">
           <Button
             variant="outline"

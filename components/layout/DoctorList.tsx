@@ -168,7 +168,7 @@ export const DoctorList = () => {
                 </div>
 
                 <Button
-                  className="w-full bg-[#92D7EE] hover:bg-[#4B6CB7]"
+                  className="w-full bg-[#92D7EE] "
                   variant="ghost"
                   onClick={(e) => handleBookAppointment(doctor.id, e)}
                 >
@@ -183,7 +183,7 @@ export const DoctorList = () => {
           <Button
             variant="outline"
             onClick={() => router.push('/doctors')}
-            className="px-8 py-3"
+            className="px-8 py-3 "
           >
             Xem tất cả bác sĩ
           </Button>
