@@ -57,9 +57,9 @@ export default function DoctorsPage() {
     key={doc.id} 
     className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-200 flex flex-col" 
   >
-    <div className="flex items-center p-6 flex-grow"> 
+    <div className="flex items-center p-6 grow"> 
     
-      <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+      <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 shrink-0">
         <img src={`/images/doctor/${doc.image}`} alt={doc.name} className="w-full h-full object-cover" />
       </div>
 

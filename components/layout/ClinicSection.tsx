@@ -69,6 +69,28 @@ export const ClinicSection = () => {
         image: 'anviet.png',
         specialties: ['Nhi khoa', 'Sản phụ khoa'],
         openHours: '24/7'
+      },
+       {
+        id: 5,
+        name: 'Bệnh viện Nhi Trung ương',
+        address: '18/879 La Thành, Đống Đa, Hà Nội',
+        phone: '024 6273 8532',
+        rating: 4.8,
+        reviewCount: 312,
+        image: 'anviet.png',
+        specialties: ['Nhi khoa', 'Sản phụ khoa'],
+        openHours: '24/7'
+      },
+       {
+        id: 6,
+        name: 'Bệnh viện Nhi Trung ương',
+        address: '18/879 La Thành, Đống Đa, Hà Nội',
+        phone: '024 6273 8532',
+        rating: 4.8,
+        reviewCount: 312,
+        image: 'anviet.png',
+        specialties: ['Nhi khoa', 'Sản phụ khoa'],
+        openHours: '24/7'
       }
     ]
 
@@ -107,7 +129,7 @@ export const ClinicSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {clinics.map((clinic) => (
             <Card
               key={clinic.id}

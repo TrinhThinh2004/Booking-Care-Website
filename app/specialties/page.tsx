@@ -124,7 +124,7 @@ export default function SpecialtiesPage() {
               return (
                 <div key={specialty.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-200">
                   
-                  <div className="h-48 bg-gradient-to-r from-[#92D7EE] to-[#4B6CB7] relative">
+                  <div className="h-48 bg-linear-to-r from-[#92D7EE] to-[#4B6CB7] relative">
                     <img
                       src={`/images/specialty/${specialty.image}`}
                       alt={specialty.name}
