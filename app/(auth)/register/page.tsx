@@ -1,41 +1,47 @@
-'use client'
+"use client"
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
-import { useAuthStore } from '@/stores/auth/authStore'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Loader2, Eye, EyeOff } from "lucide-react"
+import { Loader2, Eye, EyeOff } from "lucide-react" 
 
-interface LoginForm {
+interface RegisterForm {
+  name: string
   email: string
   password: string
+  confirmPassword: string
 }
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
-  const { login } = useAuthStore()
-  
+
   const {
     register,
     handleSubmit,
+    watch, 
     formState: { errors }
-  } = useForm<LoginForm>()
+  } = useForm<RegisterForm>()
 
-  const onSubmit = async (data: LoginForm) => {
+  const passwordValue = watch("password", "");
+
+  const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true)
+    
     try {
-      await login(data.email, data.password)
-      toast.success('Đăng nhập thành công!')
-      router.push('/dashboard')
+      console.log(data); 
+      
+      toast.success('Đăng ký thành công!')
+      router.push('/login')
     } catch (error) {
-      toast.error('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.')
+      toast.error('Đăng ký thất bại. Vui lòng thử lại.')
     } finally {
       setIsLoading(false)
     }
@@ -47,19 +53,37 @@ export default function LoginPage() {
     >
       <div className="max-w-md w-full space-y-8">
         
-      
-        
+   
+  
         <Card className="bg-white shadow-xl">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-gray-900">
-              Đăng nhập
+              Đăng ký
             </CardTitle>
             <CardDescription>
-              Đăng nhập vào tài khoản của bạn để tiếp tục
+              Tạo tài khoản mới để sử dụng dịch vụ
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  Họ và tên
+                </label>
+                <Input
+                  id="name"
+                  type="text"
+                  {...register('name', {
+                    required: 'Họ và tên là bắt buộc'
+                  })}
+                  className="mt-1"
+                  placeholder="Nhập họ và tên"
+                />
+                {errors.name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                )}
+              </div>
+
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Email
@@ -113,6 +137,35 @@ export default function LoginPage() {
                 )}
               </div>
 
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                  Xác nhận mật khẩu
+                </label>
+                <div className="relative mt-1">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    {...register('confirmPassword', {
+                      required: 'Xác nhận mật khẩu là bắt buộc',
+                      validate: value =>
+                        value === passwordValue || "Mật khẩu xác nhận không khớp"
+                    })}
+                    className="mt-1"
+                    placeholder="Nhập lại mật khẩu"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
+                )}
+              </div>
+
               <Button
                 type="submit"
                 variant='ghost'
@@ -120,15 +173,15 @@ export default function LoginPage() {
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Chưa có tài khoản?{' '}
-                <Link href="/register" className="font-medium text-[#92D7EE] hover:text-[#70c7e0]">
-                  Đăng ký ngay
+                Đã có tài khoản?{' '}
+                <Link href="/login" className="font-medium text-[#92D7EE] hover:text-[#70c7e0]">
+                  Đăng nhập
                 </Link>
               </p>
             </div>

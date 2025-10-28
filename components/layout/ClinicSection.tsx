@@ -145,7 +145,7 @@ export const ClinicSection = () => {
                     className="w-full h-full object-contain" 
                   />
                 ) : (
-                  <div className="h-full bg-gradient-to-r from-[#92D7EE] to-[#4B6CB7] flex items-center justify-center rounded-lg">
+                  <div className="h-full bg-linear-to-rrom-[#92D7EE] to-[#4B6CB7] flex items-center justify-center rounded-lg">
                     <span className="text-2xl font-bold text-white">
                       {clinic.name.charAt(0)}
                     </span>
@@ -154,7 +154,7 @@ export const ClinicSection = () => {
               </div>
               
   
-              <CardContent className="p-6 flex flex-col flex-grow"> 
+              <CardContent className="p-6 flex flex-col grow"> 
                 
                 <h3 className="text-xl font-semibold text-gray-900 mb-4 line-clamp-2">
                   {clinic.name}
@@ -162,7 +162,7 @@ export const ClinicSection = () => {
 
                 <div className="space-y-3 mb-4">
                   <div className="flex items-start text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                    <MapPin className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
                     <span className="line-clamp-2">{clinic.address}</span>
                   </div>
                   

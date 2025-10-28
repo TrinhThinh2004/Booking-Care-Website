@@ -116,7 +116,7 @@ export const DoctorList = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
           {doctors.map((doctor) => (
             <Card
               key={doctor.id}
@@ -141,7 +141,7 @@ export const DoctorList = () => {
                   <h3 className="text-lg font-semibold text-gray-900  transition-colors">
                     BS. {doctor.firstName} {doctor.lastName}
                   </h3>
-                  <p className="text-sm text-[#92D7EE] font-medium">
+                  <p className="text-sm text-[#92D7EE]  font-medium">
                     {doctor.specialty}
                   </p>
                 </div>
