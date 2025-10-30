@@ -1,14 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/auth/authStore'
 import { Button } from '@/components/ui/Button'
-import { User, LogOut } from 'lucide-react'
+import { User, LogOut, ChevronDown } from 'lucide-react'
 
 export const Header = () => {
   const { user, isAuthenticated, logout } = useAuthStore()
   const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -24,7 +26,7 @@ export const Header = () => {
   ]
 
   return (
-   <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
@@ -64,34 +66,66 @@ export const Header = () => {
 
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <User className="w-5 h-5 text-gray-800" />
-                  <span className="text-sm text-gray-900">
-                    {user?.firstName} {user?.lastName}
-                  </span>
-                </div>
-                {user?.role === 'ADMIN' && (
-                  <Link href="/admin">
-                    <Button variant="outline" size="sm">
-                      Quản trị
-                    </Button>
-                  </Link>
-                )}
-                <Link href="/dashboard">
-                  <Button variant="outline" size="sm">
-                    Dashboard
-                  </Button>
-                </Link>
+              <div className="relative">
                 <Button 
                   variant="ghost" 
-                  size="sm" 
-                  onClick={handleLogout} 
-                  className="text-gray-900 hover:bg-[#F7D800] hover:text-black"
+                  className="flex items-center space-x-2 text-gray-900 hover:bg-[#F7D800] hover:text-black"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
                 >
-                  <LogOut className="w-4 h-4" />
+                  <User className="w-5 h-5" />
+                  <span className="text-sm font-medium">
+                    Xin chào, {user?.lastName}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-gray-700 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
                 </Button>
+                
+                {isMenuOpen && (
+                  <div 
+                    className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+                    onMouseLeave={() => setIsMenuOpen(false)} 
+                  >
+                    <div className="py-1">
+                      <div className="px-4 py-2 text-sm text-gray-700">
+                        <p className="font-medium">{user?.firstName} {user?.lastName}</p>
+                        <p className="text-xs text-gray-500">{user?.email}</p>
+                      </div>
+                      
+                      <hr className="my-1" />
+                      
+                      <Link
+                        href="/dashboard"
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      
+                      {user?.role === 'ADMIN' && (
+                        <Link
+                          href="/admin"
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Quản trị
+                        </Link>
+                      )}
+                      
+                      <hr className="my-1" />
+                      
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+
             ) : (
               <div className="flex items-center space-x-2">
                 <Link href="/login">
@@ -104,11 +138,9 @@ export const Header = () => {
                   </Button>
                 </Link>
                 <Link href="/register">
-
                   <Button 
                     size="sm"
                     variant="ghost"
-                    // className="bg-[#92D7EE] text-black hover:bg-[#92D7EE]/90"
                     className="text-gray-900 hover:bg-[#F7D800] hover:text-black"
                   >
                     Đăng ký
@@ -119,7 +151,6 @@ export const Header = () => {
           </div>
           
         </div>
-        
       </div>
     </header>
   )

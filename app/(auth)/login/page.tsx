@@ -33,7 +33,12 @@ export default function LoginPage() {
     try {
       await login(data.email, data.password)
       toast.success('Đăng nhập thành công!')
-      router.push('/dashboard')
+      const currentUser = useAuthStore.getState().user
+      if (currentUser && currentUser.role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/')
+      }
     } catch (error) {
       toast.error('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.')
     } finally {

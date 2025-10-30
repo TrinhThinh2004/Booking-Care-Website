@@ -1,42 +1,36 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuthStore } from './authStore'
+import { Loader2 } from 'lucide-react' 
 
 interface AuthProviderProps {
   children: React.ReactNode
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const { token, isAuthenticated, setLoading } = useAuthStore()
+  const { verifyAuth } = useAuthStore()
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
-    // Verify token on app load
-    const verifyToken = async () => {
-      if (token && isAuthenticated) {
-        setLoading(true)
-        try {
-          const response = await fetch('/api/auth/verify', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          })
-
-          if (!response.ok) {
-            // Token is invalid, logout user
-            useAuthStore.getState().logout()
-          }
-        } catch (error) {
-          console.error('Token verification failed:', error)
-          useAuthStore.getState().logout()
-        } finally {
-          setLoading(false)
-        }
+    const initialize = async () => {
+      try {
+        await verifyAuth()
+      } catch (e) {
+      } finally {
+        setIsInitialized(true)
       }
     }
+    initialize()
+  }, [verifyAuth]) 
 
-    verifyToken()
-  }, [token, isAuthenticated, setLoading])
+  if (!isInitialized) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin" />
+      </div>
+    )
+  }
 
   return <>{children}</>
 }

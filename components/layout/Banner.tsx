@@ -26,9 +26,9 @@ export const Banner = () => {
     },
     {
       icon: MapPin,
-      title: 'Tìm phòng khám',
-      description: 'Tìm phòng khám gần bạn',
-      href: '/clinics',
+      title: 'Tìm bác sĩ',
+      description: 'Tìm bác sĩ theo chuyên khoa',
+      href: '/specialties',
       color: 'bg-[#92D7EE]'
     },
     {

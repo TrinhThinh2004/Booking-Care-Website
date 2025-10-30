@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
+import { useAuthStore } from '@/stores/auth/authStore'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -22,6 +23,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
+  const { register: registerAction } = useAuthStore()
 
   const {
     register,
@@ -36,10 +38,21 @@ export default function RegisterPage() {
     setIsLoading(true)
     
     try {
-      console.log(data); 
-      
+      // Split full name into firstName and lastName
+      const nameParts = data.name.trim().split(/\s+/)
+      const firstName = nameParts.shift() || ''
+      const lastName = nameParts.join(' ') || ''
+
+      await registerAction({
+        email: data.email,
+        password: data.password,
+        firstName,
+        lastName,
+      })
+
       toast.success('Đăng ký thành công!')
-      router.push('/login')
+      // After register, user is authenticated in store — redirect to dashboard
+      router.push('/dashboard')
     } catch (error) {
       toast.error('Đăng ký thất bại. Vui lòng thử lại.')
     } finally {

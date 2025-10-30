@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['sequelize', 'mysql2'],
-  },
+  serverExternalPackages: ['bcryptjs', 'sequelize'],
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
