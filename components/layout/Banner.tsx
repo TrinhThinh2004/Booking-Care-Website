@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
-import { Search, Calendar, MapPin, Clock } from 'lucide-react'
+import { Search, Calendar, MapPin, Clock,Stethoscope , Cross} from 'lucide-react'
 
 export const Banner = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -25,7 +25,7 @@ export const Banner = () => {
       color: 'bg-[#92D7EE]'
     },
     {
-      icon: MapPin,
+      icon: Cross,
       title: 'Tìm bác sĩ',
       description: 'Tìm bác sĩ theo chuyên khoa',
       href: '/specialties',

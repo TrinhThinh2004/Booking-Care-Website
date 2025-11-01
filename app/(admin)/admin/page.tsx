@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/stores/auth/authStore'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Users, Calendar, Stethoscope, Building2, BarChart3 } from 'lucide-react'
+import { Users, Calendar, Stethoscope, Building2, BarChart3, ChevronRight, Settings ,Cross} from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import AdminLayout from '@/components/admin/AdminLayout'
 
 export default function AdminPage() {
   const { user, isAuthenticated } = useAuthStore()
@@ -29,138 +28,175 @@ export default function AdminPage() {
     return null
   }
 
-  const adminActions = [
+  // Mock data - trong thực tế sẽ lấy từ API
+  const stats = {
+    totalUsers: 1234,
+    todayBookings: 45,
+    activeDoctors: 89,
+    totalClinics: 12,
+  }
+
+  const quickLinks = [
     {
-      title: 'Quản lý người dùng',
-      description: 'Quản lý tài khoản bệnh nhân và bác sĩ',
-      icon: Users,
-      href: '/admin/users',
-      color: 'bg-blue-500'
+      to: '/admin/users',
+      title: 'Quản lý Người dùng',
+      desc: 'Xem, thêm, chỉnh sửa tài khoản',
+      icon: <Users className="h-5 w-5" />,
     },
     {
-      title: 'Quản lý lịch hẹn',
-      description: 'Xem và quản lý tất cả lịch hẹn',
-      icon: Calendar,
-      href: '/admin/bookings',
-      color: 'bg-green-500'
+      to: '/admin/bookings',
+      title: 'Quản lý Lịch hẹn',
+      desc: 'Xem, đổi trạng thái lịch hẹn',
+      icon: <Calendar className="h-5 w-5" />,
     },
     {
-      title: 'Quản lý bác sĩ',
-      description: 'Thêm, sửa, xóa thông tin bác sĩ',
-      icon: Stethoscope,
-      href: '/admin/doctors',
-      color: 'bg-purple-500'
+      to: '/admin/doctors',
+      title: 'Quản lý Bác sĩ',
+      desc: 'Thêm, chỉnh sửa thông tin bác sĩ',
+      icon: <Cross className="h-5 w-5" />,
     },
     {
-      title: 'Quản lý phòng khám',
-      description: 'Quản lý thông tin phòng khám',
-      icon: Building2,
-      href: '/admin/clinics',
-      color: 'bg-orange-500'
+      to: '/admin/clinics',
+      title: 'Quản lý Phòng khám',
+      desc: 'Quản lý thông tin phòng khám',
+      icon: <Building2 className="h-5 w-5" />,
     },
-    {
-      title: 'Báo cáo thống kê',
-      description: 'Xem báo cáo và thống kê hệ thống',
-      icon: BarChart3,
-      href: '/admin/reports',
-      color: 'bg-red-500'
-    }
+ 
   ]
 
+  const statFmt = (n: number) => n.toLocaleString('vi-VN')
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Bảng điều khiển quản trị
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Quản lý hệ thống đặt lịch khám bệnh
-          </p>
+    <AdminLayout title="Tổng quan">
+      {/* KPI cards */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+        <KpiCard
+          title="Tổng người dùng"
+          value={statFmt(stats.totalUsers)}
+          icon={<Users className="h-5 w-5" />}
+        />
+        <KpiCard
+          title="Lịch hẹn hôm nay"
+          value={statFmt(stats.todayBookings)}
+          icon={<Calendar className="h-5 w-5" />}
+        />
+        <KpiCard
+          title="Bác sĩ hoạt động"
+          value={statFmt(stats.activeDoctors)}
+          icon={<Cross className="h-5 w-5" />}
+        />
+        <KpiCard
+          title="Phòng khám"
+          value={statFmt(stats.totalClinics)}
+          icon={<Building2 className="h-5 w-5" />}
+        />
+      </div>
+
+      {/* Quick links */}
+      <div className="rounded-xl border border-neutral-200 bg-white p-4 mb-6">
+        <h2 className="mb-3 text-base font-extrabold">Quản lý nhanh</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {quickLinks.map((link, index) => (
+            <ManageTile
+              key={index}
+              to={link.to}
+              title={link.title}
+              desc={link.desc}
+            >
+              {link.icon}
+            </ManageTile>
+          ))}
         </div>
+      </div>
 
-        {/* Admin Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {adminActions.map((action, index) => {
-            const Icon = action.icon
-            return (
-              <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader className="pb-3">
-                  <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center mb-3`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <CardTitle className="text-lg">{action.title}</CardTitle>
-                  <CardDescription>{action.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => router.push(action.href)}
-                  >
-                    Truy cập
-                  </Button>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
+      {/* Recent bookings */}
+      <div className="rounded-xl border border-neutral-200 bg-white p-4">
+        <h2 className="mb-3 text-base font-extrabold">Lịch hẹn gần đây</h2>
+        <ul className="divide-y">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <li
+              key={i}
+              className="flex items-center justify-between py-3 cursor-pointer hover:bg-neutral-50 rounded-lg px-2"
+              onClick={() => router.push('/admin/bookings')}
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">
+                  Lịch hẹn #{1000 + i} • Bác sĩ Nguyễn Văn A • Khám tổng quát
+                </p>
+                <p className="text-xs text-neutral-600">
+                  Bệnh nhân: Nguyễn Văn B • 09xx xxx xxx
+                </p>
+              </div>
+              <div className="ml-3 flex items-center gap-3">
+                <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+                  Đã xác nhận
+                </span>
+                <ChevronRight className="h-4 w-4 text-neutral-400" />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </AdminLayout>
+  )
+}
 
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tổng người dùng</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1,234</div>
-              <p className="text-xs text-muted-foreground">
-                +20.1% so với tháng trước
-              </p>
-            </CardContent>
-          </Card>
+function KpiCard({
+  title,
+  value,
+  sub,
+  icon,
+}: {
+  title: string
+  value: string | number
+  sub?: string
+  icon: React.ReactNode
+}) {
+  return (
+    <div className="group rounded-xl border border-[#92D7EE]/20 bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-gray-600 group-hover:text-[#92D7EE] transition-colors">
+          {title}
+        </p>
+        <span className="rounded-lg bg-[#92D7EE]/10 p-2 text-[#92D7EE] group-hover:bg-[#92D7EE] group-hover:text-white transition-colors">
+          {icon}
+        </span>
+      </div>
+      <div className="mt-2 text-2xl font-bold text-gray-800">{value}</div>
+      {sub && (
+        <p className="mt-1 text-sm text-[#92D7EE] group-hover:text-[#92D7EE] transition-colors">
+          {sub}
+        </p>
+      )}
+    </div>
+  );
+}
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Lịch hẹn hôm nay</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">45</div>
-              <p className="text-xs text-muted-foreground">
-                +12% so với hôm qua
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Bác sĩ hoạt động</CardTitle>
-              <Stethoscope className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">89</div>
-              <p className="text-xs text-muted-foreground">
-                +2 bác sĩ mới
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Phòng khám</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">
-                Tất cả đang hoạt động
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+function ManageTile({
+  to,
+  title,
+  desc,
+  children,
+}: {
+  to: string
+  title: string
+  desc: string
+  children: React.ReactNode
+}) {
+  const router = useRouter()
+  return (
+    <div
+      onClick={() => router.push(to)}
+      className="group flex items-start gap-3 rounded-lg border border-[#92D7EE]/20 p-4 transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer bg-white"
+    >
+      <span className="rounded-lg bg-[#92D7EE]/10 p-3 text-[#92D7EE] group-hover:bg-[#92D7EE] group-hover:text-white transition-colors">
+        {children}
+      </span>
+      <div className="min-w-0">
+        <p className="font-semibold text-gray-800 group-hover:text-[#92D7EE] transition-colors">
+          {title}
+        </p>
+        <p className="truncate text-sm text-gray-600">{desc}</p>
       </div>
     </div>
   )
