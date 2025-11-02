@@ -31,14 +31,12 @@ type AuthStore = AuthState & AuthActions
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
-      // State
       user: null,
       token: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
 
-      // Actions
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null })
         try {

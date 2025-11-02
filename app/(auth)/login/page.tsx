@@ -36,6 +36,9 @@ export default function LoginPage() {
       const currentUser = useAuthStore.getState().user
       if (currentUser && currentUser.role === 'ADMIN') {
         router.push('/admin')
+      } 
+      else if (currentUser && currentUser.role === 'DOCTOR') {
+        router.push('/doctor')
       } else {
         router.push('/')
       }

@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth/authStore'
 import { useRouter } from 'next/navigation'
 import { Users, Calendar, Stethoscope, Building2, BarChart3, ChevronRight, Settings ,Cross} from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import AdminLayout from '@/components/admin/AdminLayout'
+import AdminLayout from '@/app/(admin)/admin/AdminLayout'
 
 export default function AdminPage() {
   const { user, isAuthenticated } = useAuthStore()
@@ -73,22 +73,27 @@ export default function AdminPage() {
         <KpiCard
           title="Tổng người dùng"
           value={statFmt(stats.totalUsers)}
-          icon={<Users className="h-5 w-5" />}
+          icon={<Users className="h-6 w-6" />}
+        
+          color="#F7D800"
         />
         <KpiCard
           title="Lịch hẹn hôm nay"
           value={statFmt(stats.todayBookings)}
-          icon={<Calendar className="h-5 w-5" />}
+          icon={<Calendar className="h-6 w-6" />}
+            color="#92D7EE"
         />
         <KpiCard
           title="Bác sĩ hoạt động"
           value={statFmt(stats.activeDoctors)}
-          icon={<Cross className="h-5 w-5" />}
+          icon={<Cross className="h-6 w-6" />}
+          color="#4ade80"
         />
         <KpiCard
           title="Phòng khám"
           value={statFmt(stats.totalClinics)}
-          icon={<Building2 className="h-5 w-5" />}
+          icon={<Building2 className="h-6 w-6" />}
+          color="#f43f5e"
         />
       </div>
 
@@ -102,6 +107,12 @@ export default function AdminPage() {
               to={link.to}
               title={link.title}
               desc={link.desc}
+              color={
+                index === 0 ? '#F7D800' :
+                index === 1 ? '#92D7EE' :
+                index === 2 ? '#4ade80' :
+                '#f43f5e'
+              }
             >
               {link.icon}
             </ManageTile>
@@ -146,30 +157,28 @@ function KpiCard({
   value,
   sub,
   icon,
+  color = '#92D7EE',
 }: {
   title: string
   value: string | number
   sub?: string
   icon: React.ReactNode
+  color?: string
 }) {
   return (
-    <div className="group rounded-xl border border-[#92D7EE]/20 bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-gray-600 group-hover:text-[#92D7EE] transition-colors">
-          {title}
-        </p>
-        <span className="rounded-lg bg-[#92D7EE]/10 p-2 text-[#92D7EE] group-hover:bg-[#92D7EE] group-hover:text-white transition-colors">
-          {icon}
-        </span>
+    <div className="rounded-xl bg-white p-6">
+      <div className="flex items-center gap-4">
+        <div className={`p-3 rounded-full`} style={{ backgroundColor: `${color}10` }}>
+          <div style={{ color: color }}>{icon}</div>
+        </div>
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          {sub && <p className="mt-1 text-sm text-gray-600">{sub}</p>}
+        </div>
       </div>
-      <div className="mt-2 text-2xl font-bold text-gray-800">{value}</div>
-      {sub && (
-        <p className="mt-1 text-sm text-[#92D7EE] group-hover:text-[#92D7EE] transition-colors">
-          {sub}
-        </p>
-      )}
     </div>
-  );
+  )
 }
 
 function ManageTile({
@@ -177,23 +186,25 @@ function ManageTile({
   title,
   desc,
   children,
+  color = '#92D7EE'
 }: {
   to: string
   title: string
   desc: string
   children: React.ReactNode
+  color?: string
 }) {
   const router = useRouter()
   return (
     <div
       onClick={() => router.push(to)}
-      className="group flex items-start gap-3 rounded-lg border border-[#92D7EE]/20 p-4 transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer bg-white"
+      className="group flex items-start gap-3 rounded-lg border border-gray-200 p-4 transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer bg-white"
     >
-      <span className="rounded-lg bg-[#92D7EE]/10 p-3 text-[#92D7EE] group-hover:bg-[#92D7EE] group-hover:text-white transition-colors">
+      <span className="rounded-lg p-3" style={{ backgroundColor: `${color}10`, color: color }}>
         {children}
       </span>
       <div className="min-w-0">
-        <p className="font-semibold text-gray-800 group-hover:text-[#92D7EE] transition-colors">
+       <p className="font-semibold text-gray-800 group-hover:text-[#92D7EE] transition-colors">
           {title}
         </p>
         <p className="truncate text-sm text-gray-600">{desc}</p>
