@@ -2,11 +2,11 @@
 import { NextResponse } from 'next/server'
 import DB from '../../../lib/database/models'
 
-// GET - Lấy danh sách tất cả specialties
+// GET 
 export async function GET() {
   try {
     const specialties = await DB.Specialty.findAll({
-      order: [['createdAt', 'DESC']], // Sắp xếp mới nhất lên đầu (tuỳ bạn muốn giữ hay bỏ)
+      order: [['createdAt', 'DESC']], 
     })
 
     return NextResponse.json({
@@ -23,7 +23,7 @@ export async function GET() {
   }
 }
 
-// POST - Tạo specialty mới
+// POST 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
@@ -35,8 +35,6 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
-
-    // Kiểm tra specialty đã tồn tại chưa
     const existing = await DB.Specialty.findOne({ where: { name } })
     if (existing) {
       return NextResponse.json(

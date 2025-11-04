@@ -1,91 +1,26 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSpecialties } from '@/lib/hooks/useSpecialties'
 import { Card, CardContent } from '@/components/ui/Card'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { Heart, Brain, Eye, Bone, Baby, Wind } from 'lucide-react'
 
 interface Specialty {
   id: number
   name: string
   description: string
-  icon?: string
   image?: string
   doctorCount: number
 }
 
 export const Specialty = () => {
-  const [specialties, setSpecialties] = useState<Specialty[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const { data, isLoading } = useSpecialties()
 
-  const specialtyIcons = {
-    Heart,
-    Brain,
-    Eye,
-    Bone,
-    Baby,
-    Wind
-  }
-
-  useEffect(() => {
-    const mockSpecialties: Specialty[] = [
-      {
-        id: 1,
-        name: 'Tim mạch',
-        description: 'Chuyên điều trị các bệnh về tim và mạch máu',
-        icon: 'Heart',
-        image: 'timmach.png',
-        doctorCount: 25
-      },
-      {
-        id: 2,
-        name: 'Thần kinh',
-        description: 'Chuyên điều trị các bệnh về não và hệ thần kinh',
-        icon: 'Brain',
-        image: 'thankinh.png',
-        doctorCount: 18
-      },
-      {
-        id: 3,
-        name: 'Mắt',
-        description: 'Chuyên điều trị các bệnh về mắt và thị lực',
-        icon: 'Eye',
-        image: 'mat.png',
-        doctorCount: 15
-      },
-      {
-        id: 4,
-        name: 'Xương khớp',
-        description: 'Chuyên điều trị các bệnh về xương và khớp',
-        icon: 'Bone',
-        image: 'coxuongkhop.png',
-        doctorCount: 22
-      },
-      {
-        id: 5,
-        name: 'Nhi khoa',
-        description: 'Chuyên điều trị các bệnh ở trẻ em',
-        icon: 'Baby',
-        image: 'nhikhoa.png',
-        doctorCount: 20
-      },
-      {
-        id: 6,
-        name: 'Hô hấp',
-        description: 'Chuyên điều trị các bệnh về phổi và đường hô hấp',
-        icon: 'Lungs',
-        image: 'hohap.png',
-        doctorCount: 16
-      }
-    ]
-
-    setTimeout(() => {
-      setSpecialties(mockSpecialties)
-      setIsLoading(false)
-    }, 1000)
-  }, [])
+  const specialties: any[] = (data ?? []).map((s: any) => ({
+    ...s,
+    doctorCount: s?.Doctors?.[0]?.doctorCount ?? s.doctorCount ?? 0,
+  }))
 
   const handleSpecialtyClick = (specialtyId: number) => {
     router.push(`/specialties/${specialtyId}`)
@@ -116,9 +51,7 @@ export const Specialty = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {specialties.map((specialty) => {
-            const IconComponent = specialtyIcons[specialty.icon as keyof typeof specialtyIcons] || Heart
-            
+          {specialties.slice(0, 6).map((specialty) => {
             return (
               <Card
                 key={specialty.id}
@@ -128,15 +61,11 @@ export const Specialty = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center mb-4">
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors overflow-hidden">
-                      {specialty.image ? (
-                        <img
-                          src={`/images/specialty/${specialty.image}`}
-                          alt={specialty.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <IconComponent className="w-6 h-6 text-[#92D7EE]" />
-                      )}
+                      <img
+                        src={specialty.image}
+                        alt={specialty.name}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 group-hover:text-[#92D7EE] transition-colors">

@@ -1,114 +1,42 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { useSpecialties } from '@/lib/hooks/useSpecialties'
+
 interface Specialty {
   id: number
   name: string
   description: string
-  image: string
+  image?: string
   doctorCount: number
 }
 
 export default function SpecialtiesPage() {
-  const [specialties, setSpecialties] = useState<Specialty[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { data, isLoading } = useSpecialties()
 
+  const specialties: Specialty[] = (data ?? []).map((s: any) => ({
+    id: s.id,
+    name: s.name,
+    description: s.description,
+    image: s.image ? (s.image.startsWith('/') ? s.image : `/images/specialty/${s.image}`) : '/images/specialty/default.png',
+    doctorCount: s.doctorCount ?? s?.Doctors?.[0]?.doctorCount ?? 0,
+  }))
 
-  useEffect(() => {
-    const mockSpecialties: Specialty[] = [
-      {
-        id: 1,
-        name: 'Tim mạch',
-        description: 'Chuyên điều trị các bệnh về tim và mạch máu',
-        image: 'timmach.png',
-        doctorCount: 25
-      },
-      {
-        id: 2,
-        name: 'Thần kinh',
-        description: 'Chuyên điều trị các bệnh về não và hệ thần kinh',
-        image: 'thankinh.png',
-        doctorCount: 18
-      },
-      {
-        id: 3,
-        name: 'Mắt',
-        description: 'Chuyên điều trị các bệnh về mắt và thị lực',
-        image: 'mat.png',
-        doctorCount: 15
-      },
-      {
-        id: 4,
-        name: 'Xương khớp',
-        description: 'Chuyên điều trị các bệnh về xương và khớp',
-        image: 'coxuongkhop.png',
-        doctorCount: 22
-      },
-      {
-        id: 5,
-        name: 'Nhi khoa',
-        description: 'Chuyên điều trị các bệnh ở trẻ em',
-        image: 'nhikhoa.png',
-        doctorCount: 20
-      },
-      {
-        id: 6,
-        name: 'Hô hấp',
-        description: 'Chuyên điều trị các bệnh về phổi và đường hô hấp',
-        image: 'hohap.png',
-        doctorCount: 16
-      },
-      {
-        id: 7,
-        name: 'Tai Mũi Họng',
-        description: 'Điều trị các bệnh lý về tai, mũi, họng và đường hô hấp trên',
-        image: 'hohap.png',
-        doctorCount: 14
-      },
-      {
-        id: 8,
-        name: 'Nội tiết',
-        description: 'Chẩn đoán và điều trị các rối loạn nội tiết, đái tháo đường',
-        image: 'hohap.png',
-        doctorCount: 12
-      },
-      {
-        id: 9,
-        name: 'Tim mạch can thiệp',
-        description: 'Chuyên sâu về can thiệp tim mạch và điều trị đột quỵ',
-        image: 'hohap.png',
-        doctorCount: 8
-      },
-      {
-        id: 10,
-        name: 'Tiêu hóa',
-        description: 'Điều trị các bệnh về đường tiêu hóa và gan mật',
-        image: 'hohap.png',
-        doctorCount: 15
-      },
-      {
-        id: 11,
-        name: 'Da liễu',
-        description: 'Chăm sóc và điều trị các bệnh về da',
-        image: 'hohap.png',
-        doctorCount: 10
-      },
-      {
-        id: 12,
-        name: 'Xét nghiệm',
-        description: 'Thực hiện các xét nghiệm chẩn đoán và theo dõi',
-        image: 'hohap.png', 
-        doctorCount: 8
-      }
-    ]
-
-    setTimeout(() => {
-      setSpecialties(mockSpecialties)
-      setIsLoading(false)
-    }, 1000)
-  }, [])
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+            <LoadingSpinner size="lg" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -120,13 +48,11 @@ export default function SpecialtiesPage() {
           </h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {specialties.map((specialty) => {
-              
               return (
                 <div key={specialty.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-200">
-                  
                   <div className="h-48 bg-linear-to-r from-[#92D7EE] to-[#4B6CB7] relative">
                     <img
-                      src={`/images/specialty/${specialty.image}`}
+                      src={specialty.image}
                       alt={specialty.name}
                       className="w-full h-full object-cover"
                     />
