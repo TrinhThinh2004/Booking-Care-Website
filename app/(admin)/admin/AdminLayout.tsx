@@ -95,7 +95,7 @@ export default function AdminLayout({ title, actions, children }: Props) {
           } overflow-y-auto`}
         >
           <div className="p-4">
-            <SideNav pathname={pathname} />
+            <SideNav pathname={pathname ?? ''} />
           </div>
         </aside>
 

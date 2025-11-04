@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Loader2, Eye, EyeOff } from "lucide-react"
+import { Header } from '@/components/layout/Header'
 
 interface LoginForm {
   email: string
@@ -50,6 +51,8 @@ export default function LoginPage() {
   }
 
   return (
+   <>
+   <Header />
     <div 
       className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#58C9D7]"
     >
@@ -144,5 +147,6 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+    </>
   )
 }

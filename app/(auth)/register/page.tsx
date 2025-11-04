@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Loader2, Eye, EyeOff } from "lucide-react" 
+import { Header } from '@/components/layout/Header'
 
 interface RegisterForm {
   name: string
@@ -38,7 +39,6 @@ export default function RegisterPage() {
     setIsLoading(true)
     
     try {
-      // Split full name into firstName and lastName
       const nameParts = data.name.trim().split(/\s+/)
       const firstName = nameParts.shift() || ''
       const lastName = nameParts.join(' ') || ''
@@ -51,8 +51,7 @@ export default function RegisterPage() {
       })
 
       toast.success('Đăng ký thành công!')
-      // After register, user is authenticated in store — redirect to dashboard
-      router.push('/dashboard')
+      router.push('/')
     } catch (error) {
       toast.error('Đăng ký thất bại. Vui lòng thử lại.')
     } finally {
@@ -61,6 +60,7 @@ export default function RegisterPage() {
   }
 
   return (
+    <>   <Header />
     <div 
       className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#58C9D7]"
     >
@@ -202,5 +202,7 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
+    </>
   )
+    
 }

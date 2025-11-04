@@ -1,15 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { 
-  LayoutGrid,
-  Users,
-  Calendar,
-  Stethoscope,
-  Building2,
-  MapPin,
-  Cross,
-} from 'lucide-react'
+import { Calendar, Clock, Search } from 'lucide-react'
 
 type Props = {
   pathname: string
@@ -17,28 +9,25 @@ type Props = {
 
 export default function SideNav({ pathname }: Props) {
   const items = [
-    { to: '/admin', label: 'Tổng quan', icon: <LayoutGrid /> },
-    { to: '/admin/users', label: 'Người dùng', icon: <Users /> },
-    { to: '/admin/bookings', label: 'Lịch hẹn', icon: <Calendar /> },
-    { to: '/admin/doctors', label: 'Bác sĩ', icon: <Cross /> },
-    { to: '/admin/specialties', label: 'Chuyên khoa', icon: <Stethoscope /> },
-    { to: '/admin/clinics', label: 'Phòng khám', icon: <Building2 /> },
+    { to: '/dashboard', label: 'Tổng quan', icon: <Clock /> },
+    { to: '/dashboard/booking', label: 'Đặt lịch khám', icon: <Calendar /> },
+    { to: '/dashboard/my-bookings', label: 'Lịch hẹn của tôi', icon: <Clock /> },
+    { to: '/dashboard/specialties', label: 'Tìm bác sĩ', icon: <Search /> },
   ]
 
   return (
     <nav className="grid gap-1">
       {items.map((it) => {
         const active =
-          pathname === it.to ||
-          (it.to !== '/admin' && pathname.startsWith(it.to))
+          it.to === '/dashboard'
+            ? pathname === '/dashboard'
+            : pathname === it.to || pathname.startsWith(it.to + '/')
         return (
           <Link
             key={it.to}
             href={it.to}
-            
             className={[
               'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
-              
               active
                 ? 'bg-[#92D7EE] text-gray-900'
                 : 'text-gray-900 hover:bg-[#F7D800]',

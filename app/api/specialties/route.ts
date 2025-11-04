@@ -1,12 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server'
+import { promises as fs } from 'fs'
+import path from 'path'
 import DB from '../../../lib/database/models'
 
 // GET 
 export async function GET() {
   try {
     const specialties = await DB.Specialty.findAll({
-      order: [['createdAt', 'DESC']], 
+      order: [['createdAt', 'ASC']], 
     })
 
     return NextResponse.json({
@@ -26,8 +27,38 @@ export async function GET() {
 // POST 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
-    const { name, description, image, isActive } = body
+    const contentType = req.headers.get('content-type') || ''
+
+    let name: string | null = null
+    let description: string | null = null
+    let isActive: boolean | null = null
+    let imageUrl: string | null = null
+
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await req.formData()
+      name = (formData.get('name') as string) || null
+      description = ((formData.get('description') as string) || '').trim() || null
+      const isActiveStr = formData.get('isActive') as string | null
+      isActive = isActiveStr != null ? isActiveStr === 'true' : true
+
+      const file = formData.get('image') as File | null
+      if (file && file.size > 0) {
+        const buffer = Buffer.from(await file.arrayBuffer())
+        const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'specialties')
+        await fs.mkdir(uploadsDir, { recursive: true })
+        const ext = path.extname(file.name) || '.png'
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
+        const filePath = path.join(uploadsDir, fileName)
+        await fs.writeFile(filePath, buffer)
+        imageUrl = `/uploads/specialties/${fileName}`
+      }
+    } else {
+      const body = await req.json()
+      name = body.name || null
+      description = (body.description || '').trim() || null
+      isActive = body.isActive != null ? Boolean(body.isActive) : true
+      imageUrl = body.image || null
+    }
 
     if (!name) {
       return NextResponse.json(
@@ -35,6 +66,7 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
+
     const existing = await DB.Specialty.findOne({ where: { name } })
     if (existing) {
       return NextResponse.json(
@@ -45,9 +77,9 @@ export async function POST(req: Request) {
 
     const specialty = await DB.Specialty.create({
       name,
-      description: description || null,
-      image: image || null,
-      isActive: isActive !== undefined ? isActive : true,
+      description,
+      image: imageUrl,
+      isActive: isActive ?? true,
     })
 
     return NextResponse.json(

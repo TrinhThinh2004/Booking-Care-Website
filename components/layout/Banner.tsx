@@ -21,7 +21,7 @@ export const Banner = () => {
       icon: Calendar,
       title: 'Đặt lịch khám',
       description: 'Đặt lịch với bác sĩ chuyên khoa',
-      href: '/booking',
+      href: '/dashboard/booking',
       color: 'bg-[#92D7EE]'
     },
     {
@@ -35,7 +35,7 @@ export const Banner = () => {
       icon: Clock,
       title: 'Lịch hẹn của tôi',
       description: 'Xem lịch hẹn đã đặt',
-      href: '/my-bookings',
+      href: '/dashboard/my-bookings',
       color: 'bg-[#92D7EE]'
     }
   ]

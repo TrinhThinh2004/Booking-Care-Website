@@ -13,7 +13,7 @@ type Props = {
   children: React.ReactNode
 }
 
-export default function DoctorLayout({ title, actions, children }: Props) {
+export default function DashboardLayout({ title, actions, children }: Props) {
   const [isNavOpen, setNavOpen] = useState(true)
   const [isMenuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -38,7 +38,7 @@ export default function DoctorLayout({ title, actions, children }: Props) {
       <header className="z-10 flex h-[60px] shrink-0 items-center justify-between gap-4 border-b bg-white px-6">
         <div className="flex items-center gap-4">
           <Link
-            href="/doctor"
+            href="/"
             className="flex items-center gap-2"
           >
             <img 
@@ -63,7 +63,7 @@ export default function DoctorLayout({ title, actions, children }: Props) {
           >
             <User className="h-5 w-5 " />
             <span className="hidden sm:inline">
-              Xin chào,BS. {user?.firstName || ''} {user?.lastName || ''}
+              Xin chào, {user?.firstName || ''} {user?.lastName || ''}
             </span>
             <ChevronDown
               className={`h-4 w-4 transition-transform ${

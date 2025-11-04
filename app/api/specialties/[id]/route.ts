@@ -1,11 +1,13 @@
 
 import { NextResponse } from 'next/server'
+import { promises as fs } from 'fs'
+import path from 'path'
 import DB from '../../../../lib/database/models'
 
 // GET - Lấy một specialty theo ID
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const { id: idParam } = await params
@@ -44,7 +46,7 @@ export async function GET(
 // PUT - Cập nhật specialty
 export async function PUT(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const { id: idParam } = await params
@@ -65,9 +67,38 @@ export async function PUT(
         { status: 404 }
       )
     }
+    const contentType = req.headers.get('content-type') || ''
+    let name: string | undefined
+    let description: string | undefined
+    let isActive: boolean | undefined
+    let imageUrl: string | undefined
 
-    const body = await req.json()
-    const { name, description, image, isActive } = body
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await req.formData()
+      name = (formData.get('name') as string) || undefined
+      const desc = (formData.get('description') as string) || ''
+      description = desc.trim() ? desc.trim() : undefined
+      const isActiveStr = formData.get('isActive') as string | null
+      isActive = isActiveStr != null ? isActiveStr === 'true' : undefined
+
+      const file = formData.get('image') as File | null
+      if (file && file.size > 0) {
+        const buffer = Buffer.from(await file.arrayBuffer())
+        const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'specialties')
+        await fs.mkdir(uploadsDir, { recursive: true })
+        const ext = path.extname(file.name) || '.png'
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
+        const filePath = path.join(uploadsDir, fileName)
+        await fs.writeFile(filePath, buffer)
+        imageUrl = `/uploads/specialties/${fileName}`
+      }
+    } else {
+      const body = await req.json()
+      name = body.name
+      description = (body.description || '').trim() || undefined
+      isActive = body.isActive
+      imageUrl = body.image
+    }
 
     if (name && name !== specialty.name) {
       const existing = await DB.Specialty.findOne({ where: { name } })
@@ -81,7 +112,7 @@ export async function PUT(
 
     if (name !== undefined) specialty.name = name
     if (description !== undefined) specialty.description = description
-    if (image !== undefined) specialty.image = image
+    if (imageUrl !== undefined) specialty.image = imageUrl
     if (isActive !== undefined) specialty.isActive = isActive
 
     await specialty.save()
@@ -125,19 +156,7 @@ export async function DELETE(
       )
     }
 
-    const doctorsCount = await DB.Doctor.count({
-      where: { specialtyId: id },
-    })
-
-    if (doctorsCount > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Không thể xóa chuyên khoa này vì có ${doctorsCount} bác sĩ đang sử dụng`,
-        },
-        { status: 409 }
-      )
-    }
+  
     await specialty.destroy()
 
     return NextResponse.json({
