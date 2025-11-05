@@ -1,6 +1,10 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
 npx sequelize-cli db:migrate
+
 npx sequelize-cli db:seed:all
+
+npx sequelize-cli db:migrate:undo:all
 ## Getting Started
 
 First, run the development server:
