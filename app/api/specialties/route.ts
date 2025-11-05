@@ -2,12 +2,25 @@ import { NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
 import DB from '../../../lib/database/models'
+import { Sequelize } from 'sequelize'
 
 // GET 
 export async function GET() {
   try {
     const specialties = await DB.Specialty.findAll({
-      order: [['createdAt', 'ASC']], 
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM doctors AS Doctor
+              WHERE Doctor.specialtyId = Specialty.id
+            )`),
+            'doctorCount',
+          ],
+        ],
+      },
+      order: [['createdAt', 'ASC']],
     })
 
     return NextResponse.json({

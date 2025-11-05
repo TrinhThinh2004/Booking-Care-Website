@@ -20,7 +20,17 @@ export async function GET(
       )
     }
 
-    const specialty = await DB.Specialty.findByPk(id)
+    const specialty = await DB.Specialty.findByPk(id, {
+      include: [{
+        model: DB.Doctor,
+        as: 'doctors',
+        include: [
+          { model: DB.User, as: 'user', attributes: ['firstName', 'lastName'] },
+          { model: DB.Specialty, as: 'specialty', attributes: ['name'] },
+          { model: DB.Clinic, as: 'clinic', attributes: ['name'] }
+        ]
+      }]
+    })
 
     if (!specialty) {
       return NextResponse.json(

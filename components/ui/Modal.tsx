@@ -25,7 +25,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
   if (!isOpen) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+    <div className="fixed inset-0 z-9999 overflow-y-auto">
       <div 
         className="fixed inset-0 bg-gray-500/30 backdrop-blur-none transition-opacity" 
         onClick={onClose}
@@ -33,7 +33,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
 
       <div className="flex min-h-screen items-center justify-center p-4">
         <div 
-          className="relative z-[10000] w-full max-w-2xl transform rounded-lg bg-white/90 backdrop-blur-md p-6 shadow-xl transition-all"
+          className="relative z-10000 w-full max-w-2xl transform rounded-lg bg-white/90 backdrop-blur-md p-6 shadow-xl transition-all"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-4">

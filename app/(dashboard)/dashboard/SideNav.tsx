@@ -12,7 +12,6 @@ export default function SideNav({ pathname }: Props) {
     { to: '/dashboard', label: 'Tổng quan', icon: <Clock /> },
     { to: '/dashboard/booking', label: 'Đặt lịch khám', icon: <Calendar /> },
     { to: '/dashboard/my-bookings', label: 'Lịch hẹn của tôi', icon: <Clock /> },
-    { to: '/dashboard/specialties', label: 'Tìm bác sĩ', icon: <Search /> },
   ]
 
   return (

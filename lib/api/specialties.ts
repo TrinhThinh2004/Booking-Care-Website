@@ -9,7 +9,6 @@ export async function getAllSpecialties() {
 export async function createSpecialty(formData: FormData) {
   const res = await fetch('/api/multer/specialties', {
     method: 'POST',
-    // KHÔNG set Content-Type để browser tự set multipart boundary
     body: formData,
   })
   const data = await res.json()
@@ -34,4 +33,13 @@ export async function deleteSpecialty(id: number) {
   const data = await res.json()
   if (!data.success) throw new Error(data.message || 'Failed to delete specialty')
   return data
+}
+
+export async function getSpecialtyById(id: string) {
+  const res = await fetch(`/api/specialties/${id}`, {
+    cache: 'no-store'
+  })
+  const data = await res.json()
+  if (!data.success) throw new Error(data.message || 'Failed to load specialty')
+  return data.data
 }

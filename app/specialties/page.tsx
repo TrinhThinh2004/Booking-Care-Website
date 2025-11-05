@@ -49,7 +49,11 @@ export default function SpecialtiesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {specialties.map((specialty) => {
               return (
-                <div key={specialty.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-200">
+                <div
+                  key={specialty.id}
+                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-200 cursor-pointer"
+                  onClick={() => window.location.href = `/specialties/${specialty.id}`}
+                >
                   <div className="h-48 bg-linear-to-r from-[#92D7EE] to-[#4B6CB7] relative">
                     <img
                       src={specialty.image}
