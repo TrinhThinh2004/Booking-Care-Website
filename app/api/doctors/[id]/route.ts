@@ -4,10 +4,10 @@ import DB from '../../../../lib/database/models'
 // GET
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: idParam } = params
+    const { id: idParam } = await params
     const id = parseInt(idParam)
     if (isNaN(id)) {
       return NextResponse.json({ success: false, message: 'ID không hợp lệ' }, { status: 400 })

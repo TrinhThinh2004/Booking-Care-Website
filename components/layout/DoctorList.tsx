@@ -9,15 +9,21 @@ import { Star, MapPin, Calendar } from 'lucide-react'
 
 interface Doctor {
   id: number
-  firstName: string
-  lastName: string
-  specialty: string
-  hospital: string
-  rating: number
-  reviewCount: number
-  avatar: string
-  experience: number
+  user: {
+    firstName: string
+    lastName: string
+  }
+  specialty: {
+    name: string
+  }
+  clinic: {
+    name: string
+    address: string
+  }
+  description: string
+  yearsOfExperience: number
   price: number
+  image: string
 }
 
 export const DoctorList = () => {
@@ -26,61 +32,23 @@ export const DoctorList = () => {
   const router = useRouter()
 
   useEffect(() => {
-    const mockDoctors: Doctor[] = [
-      {
-        id: 1,
-        firstName: 'Nguyễn Văn',
-        lastName: 'An',
-        specialty: 'Tim mạch',
-        hospital: 'Bệnh viện Bạch Mai',
-        rating: 4.8,
-        reviewCount: 156,
-        avatar: 'ts-pham-chi-lang.png',
-        experience: 15,
-        price: 500000
-      },
-      {
-        id: 2,
-        firstName: 'Trần Thị',
-        lastName: 'Bình',
-        specialty: 'Nhi khoa',
-        hospital: 'Bệnh viện Nhi Trung ương',
-        rating: 4.9,
-        reviewCount: 203,
-        avatar: 'ts-pham-chi-lang.png',
-        experience: 12,
-        price: 450000
-      },
-      {
-        id: 3,
-        firstName: 'Lê Minh',
-        lastName: 'Cường',
-        specialty: 'Xương khớp',
-        hospital: 'Bệnh viện Chấn thương chỉnh hình',
-        rating: 4.7,
-        reviewCount: 98,
-       avatar: 'ts-pham-chi-lang.png',
-        experience: 18,
-        price: 600000
-      },
-      {
-        id: 4,
-        firstName: 'Phạm Thị',
-        lastName: 'Dung',
-        specialty: 'Mắt',
-        hospital: 'Bệnh viện Mắt Trung ương',
-        rating: 4.9,
-        reviewCount: 134,
-        avatar: 'ts-pham-chi-lang.png',
-        experience: 10,
-        price: 400000
+    async function fetchDoctors() {
+      try {
+        const response = await fetch('/api/doctors')
+        const data = await response.json()
+        if (data.success) {
+          setDoctors(data.data)
+        } else {
+          console.error('Failed to fetch doctors:', data.message)
+        }
+      } catch (error) {
+        console.error('Error fetching doctors:', error)
+      } finally {
+        setIsLoading(false)
       }
-    ]
+    }
 
-    setTimeout(() => {
-      setDoctors(mockDoctors)
-      setIsLoading(false)
-    }, 1000)
+    fetchDoctors()
   }, [])
 
   const handleDoctorClick = (doctorId: number) => {
@@ -126,44 +94,40 @@ export const DoctorList = () => {
               <CardContent className="p-6">
                 <div className="text-center mb-4">
                   <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center overflow-hidden">
-                    {doctor.avatar ? (
+                    {doctor.image ? (
                       <img
-                        src={`/images/doctor/${doctor.avatar}`}
-                        alt={`BS. ${doctor.firstName} ${doctor.lastName}`}
+                        src={doctor.image}
+                        alt={`BS. ${doctor.user.firstName} ${doctor.user.lastName}`}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <span className="text-2xl font-bold text-gray-600">
-                        {doctor.firstName.charAt(0)}{doctor.lastName.charAt(0)}
+                        {doctor.user.firstName.charAt(0)}{doctor.user.lastName.charAt(0)}
                       </span>
                     )}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900  transition-colors">
-                    BS. {doctor.firstName} {doctor.lastName}
+                  <h3 className="text-lg font-semibold text-gray-900 transition-colors">
+                    BS. {doctor.user.firstName} {doctor.user.lastName}
                   </h3>
-                  <p className="text-sm text-[#92D7EE]  font-medium">
-                    {doctor.specialty}
+                  <p className="text-sm text-[#92D7EE] font-medium">
+                    {doctor.specialty.name}
                   </p>
                 </div>
 
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-sm text-gray-600">
                     <MapPin className="w-4 h-4 mr-2" />
-                    <span className="truncate">{doctor.hospital}</span>
+                    <span className="truncate">{doctor.clinic?.name}</span>
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Calendar className="w-4 h-4 mr-2" />
-                    <span>{doctor.experience} năm kinh nghiệm</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Star className="w-4 h-4 mr-2 text-yellow-400 fill-current" />
-                    <span>{doctor.rating} ({doctor.reviewCount} đánh giá)</span>
+                    <span className="line-clamp-2">{doctor.yearsOfExperience} năm kinh nghiệm</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-lg font-bold text-green-600">
-                    {doctor.price.toLocaleString('vi-VN')}đ
+                    {doctor.price?.toLocaleString('vi-VN') || 0}đ
                   </span>
                 </div>
 
