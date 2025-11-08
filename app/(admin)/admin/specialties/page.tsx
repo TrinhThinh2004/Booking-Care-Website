@@ -7,7 +7,6 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
-import { mutate } from 'swr'
 import { SpecialtyForm } from '@/app/(admin)/admin/specialties/SpecialtyForm'
 import { createSpecialty, updateSpecialty, deleteSpecialty } from '@/lib/api/specialties'
 import { Plus, Edit, Trash2 } from 'lucide-react'
@@ -37,8 +36,7 @@ export default function AdminSpecialtiesPage() {
     setIsDeleting(id)
     try {
       await deleteSpecialty(id)
-      await mutate() // Refresh specialties list
-      await mutate('/api/doctors') // Refresh global doctors list
+      await mutate()
       toast.success('Xóa chuyên khoa thành công')
     } catch (error: any) {
       toast.error(error?.message || 'Có lỗi xảy ra khi xóa chuyên khoa')
