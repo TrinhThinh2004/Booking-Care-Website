@@ -33,8 +33,16 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       await login(data.email, data.password)
-      toast.success('Đăng nhập thành công!')
       const currentUser = useAuthStore.getState().user
+      
+      if (currentUser && !currentUser.isActive) {
+        toast.error('Tài khoản của bạn đã bị vô hiệu hóa')
+        useAuthStore.getState().logout() 
+        return
+      }
+
+      toast.success('Đăng nhập thành công!')
+      
       if (currentUser && currentUser.role === 'ADMIN') {
         router.push('/admin')
       } 

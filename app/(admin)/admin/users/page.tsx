@@ -49,7 +49,8 @@ export default function UsersPage() {
 
   const { data, isLoading, error, mutate } = useUsers({
     role: selectedRole !== 'all' ? selectedRole : undefined,
-    search: searchQuery || undefined
+    search: searchQuery || undefined,
+    clientSideFilter: true // Enable client-side filtering
   })
 
   const handleSearch = () => {
