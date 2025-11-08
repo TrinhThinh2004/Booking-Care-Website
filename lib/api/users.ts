@@ -19,6 +19,7 @@ interface UpdateUserData {
   lastName?: string;
   phone?: string;
   role?: string;
+  isActive?: boolean;
 }
 
 export async function getUsers(params?: GetUsersParams) {

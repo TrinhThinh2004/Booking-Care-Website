@@ -13,8 +13,8 @@ interface Doctor {
     firstName: string
     lastName: string
   }
-  specialty: {
-    name: string
+  specialty?: {
+    name?: string
   }
   clinic: {
     name: string
@@ -85,7 +85,13 @@ export const DoctorList = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
-          {doctors.map((doctor) => (
+          {( 
+            [...doctors].sort((a, b) => {
+              const ay = (a as any).yearsOfExperience ?? (a as any).yearOfExperience ?? 0
+              const by = (b as any).yearsOfExperience ?? (b as any).yearOfExperience ?? 0
+              return by - ay
+            })
+          ).map((doctor) => (
             <Card
               key={doctor.id}
               className="hover:shadow-lg transition-all duration-200 cursor-pointer group"
@@ -110,7 +116,9 @@ export const DoctorList = () => {
                     BS. {doctor.user.firstName} {doctor.user.lastName}
                   </h3>
                   <p className="text-sm text-[#92D7EE] font-medium">
-                    {doctor.specialty.name}
+                    {doctor.specialty && doctor.specialty.name && doctor.specialty.name !== 'null'
+                      ? doctor.specialty.name
+                      : 'Chưa cập nhật'}
                   </p>
                 </div>
 

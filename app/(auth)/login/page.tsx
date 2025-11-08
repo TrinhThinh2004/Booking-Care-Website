@@ -143,7 +143,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center">  
               <p className="text-sm text-gray-600">
                 Chưa có tài khoản?{' '}
                 <Link href="/register" className="font-medium text-[#92D7EE] hover:text-[#70c7e0]">

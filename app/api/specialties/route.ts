@@ -80,8 +80,29 @@ export async function POST(req: Request) {
       )
     }
 
-    const existing = await DB.Specialty.findOne({ where: { name } })
+    // Check for existing specialty including soft-deleted rows (paranoid)
+    const existing = await DB.Specialty.findOne({ where: { name }, paranoid: false })
     if (existing) {
+      // If found but was soft-deleted, restore it instead of creating a new row
+      if (existing.deletedAt) {
+        existing.deletedAt = null
+        existing.name = name
+        existing.description = description
+        if (imageUrl) existing.image = imageUrl
+        existing.isActive = isActive ?? true
+        await existing.save()
+        await existing.restore?.()
+        return NextResponse.json(
+          {
+            success: true,
+            message: 'Chuyên khoa đã được khôi phục',
+            data: { specialty: existing },
+          },
+          { status: 200 }
+        )
+      }
+
+      // Otherwise it's an active existing specialty
       return NextResponse.json(
         { success: false, message: 'Chuyên khoa này đã tồn tại' },
         { status: 409 }

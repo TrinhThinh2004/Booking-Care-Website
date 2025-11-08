@@ -11,13 +11,14 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get('search')
 
     const where: any = {
-      isActive: true 
+      // isActive: true 
     }
     
 
     if (role && role !== 'all') {
       where.role = role
     }
+ 
     
     if (search) {
       where[Op.or] = [
@@ -110,6 +111,7 @@ export async function POST(request: Request) {
       phone: data.phone || null,
       role: data.role,
       isActive: true
+
     })
 
     const { password, ...userWithoutPassword } = user.toJSON()

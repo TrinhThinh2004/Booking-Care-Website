@@ -154,6 +154,7 @@ export default function UsersPage() {
                 <th className="py-4 px-6 text-left font-medium">Email</th>
                 <th className="py-4 px-6 text-left font-medium">Số điện thoại</th>
                 <th className="py-4 px-6 text-left font-medium">Vai trò</th>
+                 <th className="py-4 px-6 text-left font-medium">Trạng thái</th>
                 <th className="py-4 px-6 text-left font-medium">Thao tác</th>
               </tr>
             </thead>
@@ -200,6 +201,13 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="py-4 px-6">
+                      {user.isActive ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Kích hoạt</span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">Vô hiệu hóa</span>
+                      )}
+                    </td>
+                    <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
                         <Button 
                           variant="outline" 
@@ -209,24 +217,32 @@ export default function UsersPage() {
                         >
                           Chi tiết
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-red-600 border-red-600 hover:bg-red-50"
-                          onClick={async () => {
-                            if (confirm('Bạn có chắc chắn muốn vô hiệu hóa người dùng này?')) {
-                              try {
-                                await deleteUser(user.id)
-                                await mutate()
-                                toast.success('Xóa người dùng thành công')
-                              } catch (error: any) {
-                                toast.error(error?.message || 'Có lỗi xảy ra khi xóa người dùng')
-                              }
+
+                        {user.role !== 'ADMIN' && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className={
+                              user.isActive
+                                ? 'text-red-600 border-red-600 hover:bg-red-50'
+                                : 'text-green-600 border-green-600 hover:bg-green-50'
                             }
-                          }}
-                        >
-                          Xóa
-                        </Button>
+                            onClick={async () => {
+                              const action = user.isActive ? 'vô hiệu hóa' : 'kích hoạt'
+                              if (confirm(`Bạn có chắc chắn muốn ${action} người dùng này?`)) {
+                                try {
+                                  await updateUser(user.id, { isActive: !user.isActive } as any)
+                                  await mutate()
+                                  toast.success(`${action.charAt(0).toUpperCase() + action.slice(1)} người dùng thành công`)
+                                } catch (error: any) {
+                                  toast.error(error?.message || `Có lỗi xảy ra khi ${action} người dùng`)
+                                }
+                              }
+                            }}
+                          >
+                            {user.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
