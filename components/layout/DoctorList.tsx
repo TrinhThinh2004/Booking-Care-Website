@@ -85,13 +85,15 @@ export const DoctorList = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
-          {( 
-            [...doctors].sort((a, b) => {
-              const ay = (a as any).yearsOfExperience ?? (a as any).yearOfExperience ?? 0
-              const by = (b as any).yearsOfExperience ?? (b as any).yearOfExperience ?? 0
-              return by - ay
-            })
-          ).map((doctor) => (
+         {([...doctors]
+  .sort((a, b) => {
+    const ay = a.yearsOfExperience ?? 0
+    const by = b.yearsOfExperience ?? 0
+    return by - ay
+  })
+  .slice(0, 4) 
+).map((doctor) => (
+
             <Card
               key={doctor.id}
               className="hover:shadow-lg transition-all duration-200 cursor-pointer group"

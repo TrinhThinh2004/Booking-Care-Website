@@ -1,30 +1,65 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import AdminLayout from '../AdminLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { ChevronDown, Search, Filter, Plus } from 'lucide-react'
+import { ChevronDown, Search, Filter } from 'lucide-react'
+import { useDoctors } from '@/lib/hooks/useDoctors'
+import { useSpecialties } from '@/lib/hooks/useSpecialties'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { EditDoctorModal } from './UpdateDoctorsModal'
+import { createDoctor, updateDoctor } from '@/lib/api/doctors'
+import { toast } from 'react-hot-toast'
 
 export default function DoctorsPage() {
   const [selectedSpecialty, setSelectedSpecialty] = useState('all')
-  const specialties = [
-    { value: 'all', label: 'Tất cả chuyên khoa' },
-    { value: 'cardiology', label: 'Tim mạch' },
-    { value: 'neurology', label: 'Thần kinh' },
-    { value: 'orthopedics', label: 'Cơ xương khớp' },
-    { value: 'pediatrics', label: 'Nhi khoa' },
-  ]
+  const [searchQuery, setSearchQuery] = useState('')
+  
+  const { data: specialties, isLoading: loadingSpecialties } = useSpecialties()
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [editingDoctor, setEditingDoctor] = useState<any>(null)
+  
+  const { doctors, isLoading: loadingDoctors, mutate } = useDoctors({
+    search: searchQuery,
+    specialtyId: selectedSpecialty === 'all' ? undefined : Number(selectedSpecialty)
+  })
+
+  const specialtyOptions = useMemo(() => {
+    const options = [{ value: 'all', label: 'Tất cả chuyên khoa' }]
+    if (specialties) {
+      options.push(...specialties.map((s: any) => ({
+        value: String(s.id),
+        label: s.name
+      })))
+    }
+    return options
+  }, [specialties])
+
+  const handleOpenEditModal = (doctor: any) => {
+    setEditingDoctor(doctor)
+    setEditModalOpen(true)
+  }
+
+  const handleCloseEditModal = () => {
+    setEditingDoctor(null)
+    setEditModalOpen(false)
+  }
+
+  const handleUpdateDoctor = async (formData: FormData) => {
+    try {
+      await updateDoctor(Number(formData.get('id')), formData)
+      handleCloseEditModal()
+      await mutate()
+      toast.success('Cập nhật bác sĩ thành công')
+    } catch (error: any) {
+      toast.error(error.message || 'Có lỗi xảy ra')
+    }
+  }
 
   return (
     <AdminLayout 
       title="Quản lý bác sĩ"
-      actions={
-        <Button className="bg-[#92D7EE] hover:bg-[#92D7EE]/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Thêm bác sĩ
-        </Button>
-      }
     >
       <Card>
         {/* Filters */}
@@ -37,6 +72,8 @@ export default function DoctorsPage() {
                   type="text"
                   placeholder="Tìm kiếm theo tên, chuyên khoa..."
                   className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#92D7EE]"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
@@ -47,7 +84,7 @@ export default function DoctorsPage() {
                 onChange={(e) => setSelectedSpecialty(e.target.value)}
                 className="appearance-none w-full min-w-[180px] pl-4 pr-10 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#92D7EE] cursor-pointer"
               >
-                {specialties.map(specialty => (
+                {specialtyOptions.map((specialty: {value: string, label: string}) => (
                   <option key={specialty.value} value={specialty.value}>
                     {specialty.label}
                   </option>
@@ -77,14 +114,14 @@ export default function DoctorsPage() {
               </tr>
             </thead>
             <tbody className="divide-y text-sm">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="hover:bg-gray-50">
+              {(doctors || []).map((doctor: any) => (
+                <tr key={doctor.id} className="hover:bg-gray-50">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-[#92D7EE]/20 flex items-center justify-center">
                         <img
-                          src={`/images/doctor/doctor${i + 1}.jpg`}
-                          alt=""
+                          src={doctor.image || '/images/doctor/default.png'}
+                          alt={doctor.name}
                           className="w-10 h-10 rounded-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
@@ -93,34 +130,27 @@ export default function DoctorsPage() {
                         />
                       </div>
                       <div>
-                        <p className="font-medium">BS. Nguyễn Văn {String.fromCharCode(65 + i)}</p>
-                        <p className="text-gray-500 text-xs">ID: #200{i}</p>
+                        <p className="font-medium">{doctor.name}</p>
+                        <p className="text-gray-500 text-xs">ID: #{doctor.id}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-6 text-gray-600">doctor{i + 1}@example.com</td>
+                  <td className="py-4 px-6 text-gray-600">{doctor.email}</td>
                   <td className="py-4 px-6">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${i % 4 === 0 ? 'bg-red-50 text-red-700' :
-                        i % 4 === 1 ? 'bg-blue-50 text-blue-700' :
-                        i % 4 === 2 ? 'bg-green-50 text-green-700' :
-                        'bg-purple-50 text-purple-700'}`}>
-                      {i % 4 === 0 ? 'Tim mạch' :
-                        i % 4 === 1 ? 'Thần kinh' :
-                        i % 4 === 2 ? 'Cơ xương khớp' :
-                        'Nhi khoa'}
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                      {doctor.specialtyName || 'Chưa cập nhật'}
                     </span>
                   </td>
                   <td className="py-4 px-6">
                     <div>
-                      <p className="font-medium">{20 + i * 5}</p>
+                      <p className="font-medium">-</p>
                       <p className="text-gray-500 text-xs">Lịch hẹn tháng này</p>
                     </div>
                   </td>
                   <td className="py-4 px-6">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${i % 2 === 0 ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                      {i % 2 === 0 ? 'Đang làm việc' : 'Tạm nghỉ'}
+                      ${doctor.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                      {doctor.isActive ? 'Đang làm việc' : 'Tạm nghỉ'}
                     </span>
                   </td>
                   <td className="py-4 px-6">
@@ -128,13 +158,25 @@ export default function DoctorsPage() {
                       <Button variant="outline" size="sm" className="text-gray-700">
                         Chi tiết
                       </Button>
-                      <Button variant="outline" size="sm" className="text-[#92D7EE] border-[#92D7EE] hover:bg-[#92D7EE]/10">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-[#92D7EE] border-[#92D7EE] hover:bg-[#92D7EE]/10"
+                        onClick={() => handleOpenEditModal(doctor)}
+                      >
                         Sửa
                       </Button>
                     </div>
                   </td>
                 </tr>
               ))}
+              {(!doctors || doctors.length === 0) && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                    Chưa có bác sĩ nào
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -156,6 +198,15 @@ export default function DoctorsPage() {
           </div>
         </div>
       </Card>
+
+      {editingDoctor && (
+        <EditDoctorModal
+          isOpen={editModalOpen}
+          onClose={handleCloseEditModal}
+          doctor={editingDoctor}
+          onSubmit={handleUpdateDoctor}
+        />
+      )}
     </AdminLayout>
   )
 }

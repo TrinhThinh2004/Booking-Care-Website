@@ -2,6 +2,18 @@ import { useState } from 'react'
 import { createUser } from '@/lib/api/users'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { useSpecialties } from '@/lib/hooks/useSpecialties'
+import { useClinics } from '@/lib/hooks/useClinics'
+
+interface Specialty {
+  id: string
+  name: string
+}
+
+interface Clinic {
+  id: string
+  name: string
+}
 
 interface CreateUserFormProps {
   onSuccess?: () => void
@@ -11,6 +23,11 @@ interface CreateUserFormProps {
 export function CreateUserForm({ onSuccess, onCancel }: CreateUserFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedRole, setSelectedRole] = useState('PATIENT')
+  const [image, setImage] = useState<File | null>(null)
+  const { data: specialties } = useSpecialties() as { data: Specialty[] }
+  const { data } = useClinics()
+  const clinics = data?.clinics || []
 
   const roles = [
     { value: 'PATIENT', label: 'Bệnh nhân' },
@@ -25,14 +42,42 @@ export function CreateUserForm({ onSuccess, onCancel }: CreateUserFormProps) {
 
     try {
       const formData = new FormData(e.currentTarget)
-      await createUser({
+      let imagePath: string | undefined
+
+      // If doctor, upload image first to the dedicated multer endpoint
+      if (selectedRole === 'DOCTOR' && image) {
+        const imgForm = new FormData()
+        imgForm.append('image', image)
+
+        const uploadRes = await fetch('/api/multer/doctors', {
+          method: 'POST',
+          body: imgForm,
+        })
+
+        if (!uploadRes.ok) {
+          const errText = await uploadRes.text()
+          throw new Error(`Upload failed: ${errText}`)
+        }
+
+        const uploadData = await uploadRes.json()
+        imagePath = uploadData.imagePath
+      }
+
+      const userData = {
         email: formData.get('email') as string,
         password: formData.get('password') as string,
         firstName: formData.get('firstName') as string,
         lastName: formData.get('lastName') as string,
         phone: formData.get('phone') as string,
         role: formData.get('role') as string,
-      })
+        ...(selectedRole === 'DOCTOR' && {
+          specialtyId: formData.get('specialtyId') as string,
+          clinicId: formData.get('clinicId') as string,
+          image: imagePath,
+        })
+      }
+
+      await createUser(userData)
       onSuccess?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Có lỗi xảy ra')
@@ -109,13 +154,15 @@ export function CreateUserForm({ onSuccess, onCancel }: CreateUserFormProps) {
       </div>
 
       <div>
-        <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="role" className=" block text-sm font-medium text-gray-700">
           Vai trò
         </label>
         <select
           id="role"
           name="role"
           required
+          value={selectedRole}
+          onChange={(e) => setSelectedRole(e.target.value)}
           className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#92D7EE] focus:border-[#92D7EE] sm:text-sm rounded-md"
         >
           {roles.map(role => (
@@ -125,6 +172,68 @@ export function CreateUserForm({ onSuccess, onCancel }: CreateUserFormProps) {
           ))}
         </select>
       </div>
+
+      {selectedRole === 'DOCTOR' && (
+        <>
+          <div>
+            <label htmlFor="specialty" className="block text-sm font-medium text-gray-700">
+              Chuyên khoa
+            </label>
+            <select
+              id="specialty"
+              name="specialtyId"
+              required
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#92D7EE] focus:border-[#92D7EE] sm:text-sm rounded-md"
+            >
+              <option value="">Chọn chuyên khoa</option>
+              {specialties?.map(specialty => (
+                <option key={specialty.id} value={specialty.id}>
+                  {specialty.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="clinic" className="block text-sm font-medium text-gray-700">
+              Bệnh viện
+            </label>
+            <select
+              id="clinic"
+              name="clinicId"
+              required
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#92D7EE] focus:border-[#92D7EE] sm:text-sm rounded-md"
+            >
+              <option value="">Chọn bệnh viện</option>
+              {clinics.map((clinic: Clinic) => (
+                <option key={clinic.id} value={clinic.id}>
+                  {clinic.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+              Ảnh đại diện
+            </label>
+            <input
+              id="image"
+              name="image"
+              type="file"
+              accept="image/*"
+              required
+              onChange={(e) => setImage(e.target.files?.[0] || null)}
+              className="mt-1 block w-full text-sm text-slate-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-[#92D7EE] file:text-white
+                hover:file:bg-[#92D7EE]/90"
+            />
+          </div>
+        </>
+      )}
 
       {error && (
         <div className="text-red-500 text-sm">

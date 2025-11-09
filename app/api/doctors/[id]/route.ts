@@ -46,8 +46,8 @@ export async function PUT(
     const doctor = await DB.Doctor.findByPk(id)
     if (!doctor) return NextResponse.json({ success: false, message: 'Không tìm thấy bác sĩ' }, { status: 404 })
 
-    const body = await req.json()
-    const { specialtyId, clinicId, description } = body
+  const body = await req.json()
+  const { specialtyId, clinicId, description, yearsOfExperience } = body
 
     if (specialtyId) {
       const specialty = await DB.Specialty.findByPk(specialtyId)
@@ -76,6 +76,12 @@ export async function PUT(
     }
 
     if (description !== undefined) doctor.description = description
+    if (yearsOfExperience !== undefined) {
+      const y = Number(yearsOfExperience)
+      if (!Number.isNaN(y) && isFinite(y)) {
+        doctor.yearsOfExperience = Math.max(0, Math.floor(y))
+      }
+    }
 
     await doctor.save()
 

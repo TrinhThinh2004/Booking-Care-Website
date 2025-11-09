@@ -66,6 +66,7 @@ export async function POST(req: Request) {
       specialtyId,
       clinicId: clinicId || null,
       description: description || null,
+      yearsOfExperience: body.yearsOfExperience ? Number(body.yearsOfExperience) : 0,
     })
 
     return NextResponse.json({ success: true, message: 'Tạo bác sĩ thành công', data: { doctor } }, { status: 201 })

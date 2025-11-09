@@ -111,8 +111,20 @@ export async function POST(request: Request) {
       phone: data.phone || null,
       role: data.role,
       isActive: true
-
     })
+
+    // If role is doctor, create a doctor record
+    if (data.role === 'DOCTOR') {
+      await DB.Doctor.create({
+        userId: user.id,
+        specialtyId: data.specialtyId ? Number(data.specialtyId) : null,
+        clinicId: data.clinicId ? Number(data.clinicId) : null,
+        image: data.image || null,
+        description: data.description || null,
+        yearsOfExperience: 0,
+        price: 0
+      })
+    }
 
     const { password, ...userWithoutPassword } = user.toJSON()
 
