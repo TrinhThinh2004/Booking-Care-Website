@@ -34,10 +34,10 @@ export async function GET(
 // PUT
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: idParam } = params
+    const { id: idParam } = await params
     const id = parseInt(idParam)
     if (isNaN(id)) {
       return NextResponse.json({ success: false, message: 'ID không hợp lệ' }, { status: 400 })
@@ -46,8 +46,37 @@ export async function PUT(
     const doctor = await DB.Doctor.findByPk(id)
     if (!doctor) return NextResponse.json({ success: false, message: 'Không tìm thấy bác sĩ' }, { status: 404 })
 
-  const body = await req.json()
-  const { specialtyId, clinicId, description, yearsOfExperience } = body
+    // Support both JSON and multipart/form-data (FormData) payloads.
+    let specialtyId: any = undefined
+    let clinicId: any = undefined
+    let description: any = undefined
+    let yearsOfExperience: any = undefined
+
+    const contentType = req.headers.get('content-type') || ''
+    if (contentType.includes('multipart/form-data')) {
+      const form = await req.formData()
+      const s = form.get('specialtyId')
+      const c = form.get('clinicId')
+      const d = form.get('description')
+      const y = form.get('yearsOfExperience')
+
+      specialtyId = s !== null && s !== '' ? Number(s) : undefined
+      if (c === null) {
+        clinicId = undefined
+      } else if (c === '') {
+        clinicId = null
+      } else {
+        clinicId = Number(c)
+      }
+      description = d !== null ? String(d) : undefined
+      yearsOfExperience = y !== null ? String(y) : undefined
+    } else {
+      const body = await req.json()
+      specialtyId = body.specialtyId
+      clinicId = Object.prototype.hasOwnProperty.call(body, 'clinicId') ? body.clinicId : undefined
+      description = body.description
+      yearsOfExperience = body.yearsOfExperience
+    }
 
     if (specialtyId) {
       const specialty = await DB.Specialty.findByPk(specialtyId)
@@ -95,10 +124,10 @@ export async function PUT(
 // DELETE 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: idParam } = params
+    const { id: idParam } = await params
     const id = parseInt(idParam)
     if (isNaN(id)) {
       return NextResponse.json({ success: false, message: 'ID không hợp lệ' }, { status: 400 })

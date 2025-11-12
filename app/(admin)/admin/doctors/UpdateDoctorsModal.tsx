@@ -26,6 +26,7 @@ export function EditDoctorModal({ doctor, isOpen, onClose, onSubmit }: EditDocto
   const { data: specialties } = useSpecialties()
   const { data: clinics } = useClinics()
 
+
   useEffect(() => {
     if (doctor) {
       setPreview(doctor.image || '')
@@ -48,7 +49,6 @@ export function EditDoctorModal({ doctor, isOpen, onClose, onSubmit }: EditDocto
       formData.append('clinicId', String(clinicId))
       formData.append('description', description)
       formData.append('yearsOfExperience', String(yearsOfExperience))
-      // Nếu user chọn ảnh mới
       if ((e.currentTarget.elements.namedItem('image') as HTMLInputElement)?.files?.[0]) {
         formData.append('image', (e.currentTarget.elements.namedItem('image') as HTMLInputElement).files![0])
       }
@@ -126,6 +126,7 @@ export function EditDoctorModal({ doctor, isOpen, onClose, onSubmit }: EditDocto
               className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-[#92D7EE] focus:outline-none text-sm"
             >
               <option value="">-- Chọn phòng khám --</option>
+             
               {clinics?.clinics?.map((clinic: any) => (
                 <option key={clinic.id} value={clinic.id}>
                   {clinic.name}

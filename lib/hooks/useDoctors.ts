@@ -9,7 +9,6 @@ interface UseDoctorsOptions {
   search?: string
   limit?: number
   page?: number
-  // when true, fetch full list once and apply search/pagination client-side
   clientSideFilter?: boolean
 }
 export interface Doctor {
@@ -23,13 +22,11 @@ export interface Doctor {
   image?: string
   isActive?: boolean
   yearsOfExperience?: number
-  // normalized alias for some older code that expects `yearOfExperience`
   yearOfExperience?: number
   createdAt?: string
 }
 
 export function useDoctors(options: UseDoctorsOptions = {}) {
-  // stable key when using client-side filtering to avoid refetch on every keystroke
   const key = options.clientSideFilter ? '/api/doctors' : ['/api/doctors', options.specialtyId, options.search, options.page, options.limit]
 
   const { data, error, isLoading, mutate } = useSWR(
@@ -49,8 +46,12 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
             lastName: user.lastName || plain.lastName || '',
             name: `${(user.firstName || plain.firstName || '').trim()} ${(user.lastName || plain.lastName || '').trim()}`.trim(),
             email: user.email || plain.email || '',
+            specialtyId: specialty?.id || plain.specialtyId || plain.SpecialtyId || null,
             specialtyName: specialty?.name || plain.specialtyName || 'Chưa cập nhật',
+            clinicId: clinic?.id || plain.clinicId || plain.ClinicId || null,
             clinicName: clinic.name || plain.clinicName || '',
+            userId: user.id || plain.userId || null,
+            description: plain.description || '',
             image: plain.image || user.image || '',
             isActive: plain.isActive ?? true,
             yearsOfExperience: plain.yearsOfExperience ?? plain.yearOfExperience ?? 0,
