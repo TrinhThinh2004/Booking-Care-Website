@@ -5,67 +5,44 @@ import { Footer } from '@/components/layout/Footer';
 
 import DoctorBookingCard from '@/components/ui/DoctorBookingCard';
 
-import { Doctor } from "@/components/ui/DoctorBookingCard";
+import { Doctor } from '@/components/ui/DoctorBookingCard';
+import DB from '@/lib/database/models';
 
-const ALL_DOCTORS_DETAILED: Doctor[] = [
-  {
-    id: 1,
-    specialtyId: 4,
-    name: "PGS. TS. BSCKII. TTUT Vũ Văn Hòe",
-    title: "Phó chủ tịch Hội Phẫu thuật Cột sống Việt Nam",
-    description: "Bác sĩ có 35 năm kinh nghiệm về vực Cột sống, thần kinh, cơ xương khớp.",
-    location: "Hà Nội",
-    avatarUrl: "/images/doctor/ts-pham-chi-lang.png",
+async function getDoctorsBySpecialtyFromDb(specialtyId: number): Promise<Doctor[]> {
+  const doctors = await DB.Doctor.findAll({
+    where: { specialtyId },
+    order: [['createdAt', 'ASC']],
+    include: [
+      { model: DB.User, as: 'user', attributes: ['firstName', 'lastName', 'email',] },
+      { model: DB.Specialty, as: 'specialty', attributes: ['id', 'name'] },
+      { model: DB.Clinic, as: 'clinic', attributes: ['id', 'name', 'address'] },
+    ],
+  });
+
+  const mapped: Doctor[] = doctors.map((d: any) => ({
+    id: d.id,
+    specialtyId: d.specialtyId || (d.specialty?.id ?? 0),
+    name: `${(d.user?.firstName || '')} ${(d.user?.lastName || '')}`.trim() || `Bác sĩ ${d.id}`,
+    title: d.introduction || d.title || '',
+    description: d.description || (d.markdown?.content ?? '') || '',
+    location: d.clinic?.address || '',
+    avatarUrl: d.image || d.user?.image || '/images/doctor/default.png',
     clinic: {
-      name: "Phòng khám Spinetech Clinic",
-      address: "Tòa nhà GP, 257 Giải Phóng, phường Bạch Mai, Hà Nội"
+      name: d.clinic?.name || 'Chưa cập nhật',
+      address: d.clinic?.address || '',
     },
-    price: 500000
-  },
-  {
-    id: 2,
-    specialtyId: 4,
-    name: "ThS.BS Nguyễn Trần Trung",
-    title: "Phó trưởng khoa Cơ Xương Khớp Bệnh viện E",
-    description: "Bác sĩ có nhiều năm kinh nghiệm trong khám và điều trị Cơ xương khớp.",
-    location: "Hà Nội",
-   avatarUrl: "/images/doctor/ts-pham-chi-lang.png",
-    clinic: {
-      name: "Phòng Khám Đa Khoa MSC Clinic Hà Nội",
-      address: "TT20 - 21 - 22, Số 204 Nguyễn Tuân, Phường Thanh Xuân, TP Hà Nội"
-    },
-    price: 500000
-  },
-  {
-    id: 3,
-    specialtyId: 4, 
-    name: "PGS.TS. Phạm Chí Lăng",
-    title: "Chuyên gia Tim Mạch hàng đầu",
-    description: "Chuyên điều trị các bệnh về tim và mạch máu.",
-    location: "TP. HCM",
-    avatarUrl: "/images/doctor/ts-pham-chi-lang.png",
-    clinic: {
-      name: "Bệnh viện A",
-      address: "123 Đường ABC, Quận 1, TP. HCM"
-    },
-    price: 500000
-  }
-];
+    price: d.price || 0,
+  }))
 
-
-async function getDoctorsBySpecialty(specialtyId: string): Promise<Doctor[]> {
-
-  const idToFilter = Number(specialtyId);
-  const filtered = ALL_DOCTORS_DETAILED.filter(d => d.specialtyId === idToFilter);
-  return filtered;
+  return mapped
 }
 
 
 
 export default async function SpecialtyDoctorsPage({ params }: { params: { specialtyId: string } }) {
   
-  const specialtyId = params.specialtyId;
-  const doctors = await getDoctorsBySpecialty(specialtyId);
+  const specialtyId = Number(params.specialtyId);
+  const doctors = Number.isNaN(specialtyId) ? [] : await getDoctorsBySpecialtyFromDb(specialtyId);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -82,8 +59,8 @@ export default async function SpecialtyDoctorsPage({ params }: { params: { speci
                 Chưa có bác sĩ cho chuyên khoa này
               </div>
             ) : (
-              // Lặp qua danh sách bác sĩ và render thẻ chi tiết
-              doctors.map(doc => (
+  
+              doctors.map((doc: Doctor) => (
                 <DoctorBookingCard key={doc.id} doctor={doc} />
               ))
             )}

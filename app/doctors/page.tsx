@@ -14,7 +14,7 @@ export default function DoctorsPage() {
   const { doctors, isLoading, error } = useDoctors({
     search: searchQuery || undefined,
     page: currentPage,
-    limit: 12,
+    // limit: 12,
     clientSideFilter: true,
   })
 

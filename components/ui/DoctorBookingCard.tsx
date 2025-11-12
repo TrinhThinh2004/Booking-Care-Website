@@ -78,8 +78,8 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
                 className={`
                   p-2 rounded text-center text-sm font-medium
                   ${selectedTime === time 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                    ? 'bg-[#92D7EE] text-gray-900 ' 
+                    : 'bg-gray-100 text-gray-800 hover:bg-[#F7D800] hover:text-black'
                   }
                 `}
               >
