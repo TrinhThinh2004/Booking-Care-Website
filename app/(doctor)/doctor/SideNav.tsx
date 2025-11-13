@@ -2,12 +2,12 @@
 
 import Link from 'next/link'
 import { useAuthStore } from '@/stores/auth/authStore'
-import { 
+import { useDoctors } from '@/lib/hooks/useDoctors'
+import { useMemo } from 'react'
+import {
   LayoutGrid,
   Calendar,
   Clock,
-  User,
-  Settings
 } from 'lucide-react'
 
 type Props = {
@@ -16,7 +16,20 @@ type Props = {
 
 export default function SideNav({ pathname }: Props) {
   const { user } = useAuthStore()
-  const doctorId = user?.id
+  const { doctors, isLoading: doctorsLoading } = useDoctors()
+
+  const currentDoctor = useMemo(() => {
+    if (!doctors || doctors.length === 0) return null
+    if (user?.doctorId) {
+      return doctors.find((d: any) => Number(d.id) === Number(user.doctorId)) || null
+    }
+    if (user?.id) {
+      return doctors.find((d: any) => Number(d.userId) === Number(user.id)) || null
+    }
+    return null
+  }, [doctors, user])
+
+  const doctorId = currentDoctor?.id ?? null
 
   const items = [
     { to: '/doctor', label: 'Tổng quan', icon: <LayoutGrid /> },

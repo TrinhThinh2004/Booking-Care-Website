@@ -1,10 +1,8 @@
-
 "use client"; 
 
 import Image from "next/image";
 import Link from "next/link"; 
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 
 export interface Doctor {
   id: number;
@@ -21,14 +19,54 @@ export interface Doctor {
   specialtyId: number; 
 }
 
-const mockTimeSlots = [
-  "09:00 - 09:30", "09:30 - 10:00", "10:00 - 10:30", "10:30 - 11:00",
-  "11:00 - 11:30", "11:30 - 12:00", "12:00 - 12:30", "14:00 - 14:30",
-  "14:30 - 15:00", "15:00 - 15:30", "15:30 - 16:00"
-];
+interface TimeSlot {
+  id: string;
+  time: string;
+  isAvailable: boolean;
+}
 
 export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/doctors/${doctor.id}/schedule?date=${selectedDate}`);
+        const data = await res.json();
+        
+        if (data.timeSlots && Array.isArray(data.timeSlots)) {
+          setTimeSlots(data.timeSlots);
+        } else {
+          setTimeSlots([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch schedule:', error);
+        setTimeSlots([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchedule();
+  }, [doctor.id, selectedDate]);
+
+  const generateDates = () => {
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+      const dayName = date.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
+      dates.push({ value: dateStr, label: dayName });
+    }
+    return dates;
+  };
+
+  const dates = generateDates();
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
@@ -45,8 +83,8 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
                 className="rounded-full object-cover border"
               />
               <Link href={`/doctors/${doctor.id}`} className="text-sm text-[#92D7EE] hover:underline mt-2 inline-block">
-            Xem thêm
-          </Link>
+                Xem thêm
+              </Link>
             </div>
             <div>
               <span className="inline-block bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-full mb-1">
@@ -58,68 +96,79 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
               <p className="text-sm text-gray-500 mt-2">📍 {doctor.location}</p>
             </div>
           </div>
-          
         </div>
 
         <div className="w-full md:w-1/2">
           <div>
-            <select className="text-sm font-semibold border-none focus:ring-0 p-0">
-              <option>Thứ 4 - 29/10</option>
-              <option>Thứ 5 - 30/10</option>
-              <option>Thứ 6 - 31/10</option>
+            <select 
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="text-sm font-semibold border-none focus:ring-0 p-0"
+            >
+              {dates.map(date => (
+                <option key={date.value} value={date.value}>
+                  {date.label}
+                </option>
+              ))}
             </select>
             <p className="text-xs uppercase text-gray-500 mt-1 font-semibold">🗓 LỊCH KHÁM</p>
           </div>
 
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3">
-            {mockTimeSlots.map(time => (
-              <button
-                key={time}
-                onClick={() => setSelectedTime(time)}
-                className={`
-                  p-2 rounded text-center text-sm font-medium
-                  ${selectedTime === time 
-                    ? 'bg-[#92D7EE] text-gray-900 ' 
-                    : 'bg-gray-100 text-gray-800 hover:bg-[#F7D800] hover:text-black'
-                  }
-                `}
-              >
-                {time}
-              </button>
-            ))}
+            {loading ? (
+              <p className="text-sm text-gray-500">Đang tải...</p>
+            ) : timeSlots.length > 0 ? (
+              timeSlots.map(slot => (
+                <button
+                  key={slot.id}
+                  onClick={() => slot.isAvailable && setSelectedTime(slot.time)}
+                  disabled={!slot.isAvailable}
+                  className={`
+                    p-2 rounded text-center text-sm font-medium transition
+                    ${!slot.isAvailable 
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                      : selectedTime === slot.time 
+                      ? 'bg-[#92D7EE] text-gray-900' 
+                      : 'bg-gray-100 text-gray-800 hover:bg-[#F7D800] hover:text-black'
+                    }
+                  `}
+                >
+                  {slot.time}
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">Không có khung giờ trống</p>
+            )}
           </div>
           <p className="text-xs text-gray-600 mt-3">
             Chọn 📅 và đặt (Phí đặt lịch 0đ)
           </p>
-            <div className=" space-y-2 mt-4">
-       <div className="border-t pt-2">
-          <p className="text-sm font-semibold uppercase">ĐỊA CHỈ KHÁM</p>
-          <p className="text-sm text-gray-700 font-semibold">{doctor.clinic.name}</p>
-          <p className="text-sm text-gray-600">{doctor.clinic.address}</p>
-        </div>
-        
-        <div className="border-t pt-2">
-          <p className="text-sm text-gray-600">
-            GIÁ KHÁM: 
-            <span className="font-semibold text-gray-800 ml-1">
-              {doctor.price.toLocaleString('vi-VN')}đ
-            </span>
-            <Link href="#" className="text-[#92D7EE] text-sm ml-2 hover:underline">Xem chi tiết</Link>
-          </p>
-        </div>
+            <div className="space-y-2 mt-4">
+              <div className="border-t pt-2">
+                <p className="text-sm font-semibold uppercase">ĐỊA CHỈ KHÁM</p>
+                <p className="text-sm text-gray-700 font-semibold">{doctor.clinic.name}</p>
+                <p className="text-sm text-gray-600">{doctor.clinic.address}</p>
+              </div>
+              
+              <div className="border-t pt-2">
+                <p className="text-sm text-gray-600">
+                  GIÁ KHÁM: 
+                  <span className="font-semibold text-gray-800 ml-1">
+                    {doctor.price.toLocaleString('vi-VN')}đ
+                  </span>
+                  <Link href="#" className="text-[#92D7EE] text-sm ml-2 hover:underline">Xem chi tiết</Link>
+                </p>
+              </div>
 
-        <div className="border-t pt-2">
-          <p className="text-sm text-gray-600">
-            LOẠI BẢO HIỂM ÁP DỤNG: 
-            <Link href="#" className="text-[#92D7EE] text-sm ml-2 hover:underline">Xem chi tiết</Link>
-          </p>
+              <div className="border-t pt-2">
+                <p className="text-sm text-gray-600">
+                  LOẠI BẢO HIỂM ÁP DỤNG: 
+                  <Link href="#" className="text-[#92D7EE] text-sm ml-2 hover:underline">Xem chi tiết</Link>
+                </p>
+              </div>
+            </div>
         </div>
       </div>
-        </div>
-        
-      </div>
-
-    
     </div>
   );
 }

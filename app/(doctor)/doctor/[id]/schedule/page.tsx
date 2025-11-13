@@ -4,8 +4,6 @@ import DoctorLayout from '@/app/(doctor)/doctor/DoctorLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { useEffect, useState } from 'react'
-import { useAuthStore } from '@/stores/auth/authStore'
-import { useDoctors } from '../../../../../lib/hooks/useDoctors'
 
 interface TimeSlot {
   id: string
@@ -14,7 +12,7 @@ interface TimeSlot {
 }
 
 const DEFAULT_TIME_SLOTS: TimeSlot[] = [
-  { id: '1', time: '08:00 - 09:00', isAvailable: false },
+  { id: '1', time: '68:00 - 09:00', isAvailable: false },
   { id: '2', time: '09:00 - 10:00', isAvailable: false },
   { id: '3', time: '10:00 - 11:00', isAvailable: false },
   { id: '4', time: '11:00 - 12:00', isAvailable: false },
@@ -24,8 +22,7 @@ const DEFAULT_TIME_SLOTS: TimeSlot[] = [
   { id: '8', time: '16:00 - 17:00', isAvailable: false },
 ]
 
-export default function DoctorSchedule() {
-  const {doctors} = useDoctors()
+export default function DoctorSchedule({ params }: { params: Promise<{ id: string }> }) {
   const [doctorId, setDoctorId] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(DEFAULT_TIME_SLOTS)
@@ -34,32 +31,14 @@ export default function DoctorSchedule() {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-
   useEffect(() => {
-    if (!doctors) return
-    
-    const fetchDoctor = async () => {
-      try {
-        const res = await fetch(`/api/doctors?doctorId=${doctors[0].id}`)
-        const data = await res.json()
-
-        if (data.data && data.data.length > 0) {
-          setDoctorId(String(data.data[0].id))
-          setError(null)
-        } else {
-          setDoctorId(null)
-          setError('Hồ sơ bác sĩ chưa được tạo. Vui lòng liên hệ admin.')
-        }
-      } catch (err) {
-        console.error('Error fetching doctor:', err)
-        setError('Lỗi khi tải thông tin bác sĩ')
-      }
+    const getParams = async () => {
+      const { id } = await params
+      setDoctorId(id)
     }
+    getParams()
+  }, [params])
 
-    fetchDoctor()
-  }, [doctors])
-
-  // Lấy lịch làm việc theo doctorId và selectedDate
   useEffect(() => {
     if (!doctorId) return
 
