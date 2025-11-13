@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useAuthStore } from '@/stores/auth/authStore'
 import { 
   LayoutGrid,
   Calendar,
@@ -14,10 +15,13 @@ type Props = {
 }
 
 export default function SideNav({ pathname }: Props) {
+  const { user } = useAuthStore()
+  const doctorId = user?.id
+
   const items = [
     { to: '/doctor', label: 'Tổng quan', icon: <LayoutGrid /> },
     { to: '/doctors/booking', label: 'Lịch hẹn', icon: <Calendar /> },
-    { to: '/doctor/schedule', label: 'Lịch làm việc', icon: <Clock /> },
+    { to: doctorId ? `/doctor/${doctorId}/schedule` : '#', label: 'Lịch làm việc', icon: <Clock /> },
   ]
 
   return (

@@ -46,7 +46,6 @@ export async function PUT(
     const doctor = await DB.Doctor.findByPk(id)
     if (!doctor) return NextResponse.json({ success: false, message: 'Không tìm thấy bác sĩ' }, { status: 404 })
 
-    // Support both JSON and multipart/form-data (FormData) payloads.
     let specialtyId: any = undefined
     let clinicId: any = undefined
     let description: any = undefined

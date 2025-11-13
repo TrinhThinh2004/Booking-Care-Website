@@ -44,20 +44,21 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
                 height={80}
                 className="rounded-full object-cover border"
               />
+              <Link href={`/doctors/${doctor.id}`} className="text-sm text-[#92D7EE] hover:underline mt-2 inline-block">
+            Xem thêm
+          </Link>
             </div>
             <div>
               <span className="inline-block bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-full mb-1">
                 Yêu thích
               </span>
-              <h2 className="text-base font-semibold text-blue-700">{doctor.name}</h2>
+              <h2 className="text-base font-semibold text-[#92D7EE]">BS.{doctor.name}</h2>
               <p className="text-sm text-gray-600 mt-1">{doctor.title}</p>
               <p className="text-sm text-gray-600 mt-2 line-clamp-3">{doctor.description}</p>
               <p className="text-sm text-gray-500 mt-2">📍 {doctor.location}</p>
             </div>
           </div>
-          <Link href={`/doctors/${doctor.id}`} className="text-sm text-blue-600 hover:underline mt-2 inline-block">
-            Xem thêm
-          </Link>
+          
         </div>
 
         <div className="w-full md:w-1/2">
@@ -90,11 +91,8 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
           <p className="text-xs text-gray-600 mt-3">
             Chọn 📅 và đặt (Phí đặt lịch 0đ)
           </p>
-        </div>
-      </div>
-
-      <div className="bg-gray-50 p-4 border-t border-gray-200 space-y-2">
-        <div>
+            <div className=" space-y-2 mt-4">
+       <div className="border-t pt-2">
           <p className="text-sm font-semibold uppercase">ĐỊA CHỈ KHÁM</p>
           <p className="text-sm text-gray-700 font-semibold">{doctor.clinic.name}</p>
           <p className="text-sm text-gray-600">{doctor.clinic.address}</p>
@@ -106,17 +104,22 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
             <span className="font-semibold text-gray-800 ml-1">
               {doctor.price.toLocaleString('vi-VN')}đ
             </span>
-            <Link href="#" className="text-blue-600 text-sm ml-2 hover:underline">Xem chi tiết</Link>
+            <Link href="#" className="text-[#92D7EE] text-sm ml-2 hover:underline">Xem chi tiết</Link>
           </p>
         </div>
 
         <div className="border-t pt-2">
           <p className="text-sm text-gray-600">
             LOẠI BẢO HIỂM ÁP DỤNG: 
-            <Link href="#" className="text-blue-600 text-sm ml-2 hover:underline">Xem chi tiết</Link>
+            <Link href="#" className="text-[#92D7EE] text-sm ml-2 hover:underline">Xem chi tiết</Link>
           </p>
         </div>
       </div>
+        </div>
+        
+      </div>
+
+    
     </div>
   );
 }

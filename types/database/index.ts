@@ -10,6 +10,7 @@ export interface User {
   role: 'ADMIN' | 'DOCTOR' | 'PATIENT'
   avatar?: string
   isActive: boolean
+  doctorId?: number | null
   createdAt: Date
   updatedAt: Date
 }

@@ -1,10 +1,19 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import DB from '../../../lib/database/models'
 
 // GET
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('userId')
+    
+    const whereClause: any = {}
+    if (userId) {
+      whereClause.userId = Number(userId)
+    }
+
     const doctors = await DB.Doctor.findAll({
+      where: whereClause,
       order: [['createdAt', 'ASC']],
       include: [
         { model: DB.User, as: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] },
@@ -26,7 +35,6 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { userId, specialtyId, clinicId, description } = body
 
-    // Validate required fields
     if (!userId || !specialtyId) {
       return NextResponse.json(
         { success: false, message: 'userId và specialtyId là bắt buộc' },
@@ -34,7 +42,6 @@ export async function POST(req: Request) {
       )
     }
 
-    // Validate foreign keys exist
     const user = await DB.User.findByPk(userId)
     if (!user) {
       return NextResponse.json(
@@ -60,6 +67,8 @@ export async function POST(req: Request) {
         )
       }
     }
+
+   
 
     const doctor = await DB.Doctor.create({
       userId,
