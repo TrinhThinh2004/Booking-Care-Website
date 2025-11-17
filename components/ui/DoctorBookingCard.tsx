@@ -25,9 +25,28 @@ interface TimeSlot {
   isAvailable: boolean;
 }
 
+// Mảng tĩnh chứa thông tin giờ mặc định
+const DEFAULT_TIME_SLOTS = [
+  { id: '1', time: '06:00 - 09:00' },
+  { id: '2', time: '09:00 - 10:00' },
+  { id: '3', time: '10:00 - 11:00' },
+  { id: '4', time: '11:00 - 12:00' },
+  { id: '5', time: '13:00 - 14:00' },
+  { id: '6', time: '14:00 - 15:00' },
+  { id: '7', time: '15:00 - 16:00' },
+  { id: '8', time: '16:00 - 17:00' },
+];
+
+
+const getLocalDateString = (date: Date) => {
+  const offset = date.getTimezoneOffset() * 60000; 
+  const localDate = new Date(date.getTime() - offset); 
+  return localDate.toISOString().split('T')[0];
+};
+
 export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState<string>(getLocalDateString(new Date()));
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -39,13 +58,22 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
         const data = await res.json();
         
         if (data.timeSlots && Array.isArray(data.timeSlots)) {
-          setTimeSlots(data.timeSlots);
+        
+          const mergedSlots = DEFAULT_TIME_SLOTS.map(defaultSlot => {
+            const apiSlot = data.timeSlots.find((slot: any) => String(slot.id) === defaultSlot.id);
+            return {
+              id: defaultSlot.id,
+              time: defaultSlot.time, 
+              isAvailable: apiSlot ? apiSlot.isAvailable : false 
+            };
+          });
+          setTimeSlots(mergedSlots);
         } else {
-          setTimeSlots([]);
+          setTimeSlots(DEFAULT_TIME_SLOTS.map(slot => ({ ...slot, isAvailable: false })));
         }
       } catch (error) {
         console.error('Failed to fetch schedule:', error);
-        setTimeSlots([]);
+        setTimeSlots(DEFAULT_TIME_SLOTS.map(slot => ({ ...slot, isAvailable: false }))); 
       } finally {
         setLoading(false);
       }
@@ -59,8 +87,9 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
     for (let i = 0; i < 7; i++) {
       const date = new Date();
       date.setDate(date.getDate() + i);
-      const dateStr = date.toISOString().split('T')[0];
-      const dayName = date.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
+      const dateStr = getLocalDateString(date);
+      let dayName = date.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
+      dayName = dayName.charAt(0).toUpperCase() + dayName.slice(1);
       dates.push({ value: dateStr, label: dayName });
     }
     return dates;
@@ -103,7 +132,7 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
             <select 
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="text-sm font-semibold border-none focus:ring-0 p-0"
+              className="text-sm font-semibold border-none focus:ring-0 p-0" 
             >
               {dates.map(date => (
                 <option key={date.value} value={date.value}>
@@ -133,7 +162,7 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
                     }
                   `}
                 >
-                  {slot.time}
+                  {slot.time} 
                 </button>
               ))
             ) : (

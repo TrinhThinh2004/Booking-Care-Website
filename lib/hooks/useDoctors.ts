@@ -1,6 +1,6 @@
 'use client'
 import useSWR from 'swr'
-import { getAllDoctors} from '@/lib/api/doctors'
+import { useAuthStore } from '@/stores/auth/authStore'
 import { useMemo } from 'react'
 
 
@@ -10,6 +10,7 @@ interface UseDoctorsOptions {
   limit?: number
   page?: number
   clientSideFilter?: boolean
+  userId?: number | null
 }
 export interface Doctor {
   id: number
@@ -24,35 +25,54 @@ export interface Doctor {
   yearsOfExperience?: number
   yearOfExperience?: number
   createdAt?: string
+  userId?: number
 }
 
 export function useDoctors(options: UseDoctorsOptions = {}) {
-  const key = options.clientSideFilter ? '/api/doctors' : ['/api/doctors', options.specialtyId, options.search, options.page, options.limit]
+  const { user } = useAuthStore()
+  // Nếu options truyền userId, dùng cái đó; nếu không thì dùng user.id từ auth store
+  const userIdToFetch = options.userId ?? user?.id ?? null
+  
+  // SWR key sẽ thay đổi khi userId thay đổi => trigger refetch
+  const key = userIdToFetch 
+    ? ['/api/doctors', userIdToFetch, options.specialtyId, options.search, options.page, options.limit]
+    : null
 
   const { data, error, isLoading, mutate } = useSWR(
     key,
     async () => {
-      const response = await getAllDoctors()
+      if (!userIdToFetch) return { doctors: [] }
+      
+      // Gọi API với userId filter
+      const url = new URL('/api/doctors', typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
+      url.searchParams.set('userId', String(userIdToFetch))
+      
+      const res = await fetch(url.toString(), { cache: 'no-store' })
+      const data = await res.json()
+      
+      if (!data.success) throw new Error(data.message || 'Lỗi khi tải danh sách bác sĩ')
+      
+      const response = data.data
       if (Array.isArray(response)) {
         const normalized = response.map((d: any) => {
           const plain = d
-          const user = plain.user || plain.User || {}
+          const userObj = plain.user || plain.User || {}
           const specialty = plain.specialty || plain.Specialty || null
           const clinic = plain.clinic || plain.Clinic || {}
 
           return {
             id: plain.id,
-            firstName: user.firstName || plain.firstName || '',
-            lastName: user.lastName || plain.lastName || '',
-            name: `${(user.firstName || plain.firstName || '').trim()} ${(user.lastName || plain.lastName || '').trim()}`.trim(),
-            email: user.email || plain.email || '',
+            firstName: userObj.firstName || plain.firstName || '',
+            lastName: userObj.lastName || plain.lastName || '',
+            name: `${(userObj.firstName || plain.firstName || '').trim()} ${(userObj.lastName || plain.lastName || '').trim()}`.trim(),
+            email: userObj.email || plain.email || '',
             specialtyId: specialty?.id || plain.specialtyId || plain.SpecialtyId || null,
             specialtyName: specialty?.name || plain.specialtyName || 'Chưa cập nhật',
             clinicId: clinic?.id || plain.clinicId || plain.ClinicId || null,
             clinicName: clinic.name || plain.clinicName || '',
-            userId: user.id || plain.userId || null,
+            userId: userObj.id || plain.userId || null,
             description: plain.description || '',
-            image: plain.image || user.image || '',
+            image: plain.image || userObj.image || '',
             isActive: plain.isActive ?? true,
             yearsOfExperience: plain.yearsOfExperience ?? plain.yearOfExperience ?? 0,
             createdAt: plain.createdAt,
@@ -74,7 +94,6 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
 
   const filtered = useMemo(() => {
     const all = (data?.doctors as Doctor[]) || []
-    if (!options.clientSideFilter) return all
 
     let list = all
 
@@ -100,10 +119,10 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
     }
 
     return list
-  }, [data?.doctors, options.clientSideFilter, options.search, options.specialtyId, options.page, options.limit])
+  }, [data?.doctors, options.search, options.specialtyId, options.page, options.limit])
 
   return {
-    doctors: options.clientSideFilter ? filtered : ((data?.doctors as Doctor[]) || []),
+    doctors: filtered,
     isLoading,
     error,
     mutate,

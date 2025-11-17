@@ -3,9 +3,12 @@
 import DoctorLayout from '@/app/(doctor)/doctor/DoctorLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react' 
 import { useSchedule } from '@/lib/hooks/useSchedule'
 import { updateSchedule } from '@/lib/api/schedules'
+import { Loader2 } from 'lucide-react'
+import { useDoctors } from '@/lib/hooks/useDoctors'
+
 import { useAuthStore } from '@/stores/auth/authStore'
 
 interface TimeSlot {
@@ -25,68 +28,33 @@ const DEFAULT_TIME_SLOTS: TimeSlot[] = [
   { id: '8', time: '16:00 - 17:00', isAvailable: false },
 ]
 
-export default function DoctorSchedule({ params }: { params: Promise<{ id: string }> | { id?: string } }) {
+export default function DoctorSchedule() {
+
   const { user } = useAuthStore()
-  const [doctorId, setDoctorId] = useState<string | null>(null)
+  const { doctors, isLoading: isLoadingDoctor } = useDoctors()
+
+  const doctorId = useMemo(() => {
+    if (!user || !doctors) return null
+    
+    if (user.doctorId) return String(user.doctorId)
+
+    const currentDoc = doctors.find((d: any) => Number(d.userId) === Number(user.id))
+    return currentDoc ? String(currentDoc.id) : null
+  }, [user, doctors])
+
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(DEFAULT_TIME_SLOTS)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // Robust init: params -> user.doctorId -> lookup by userId
-  useEffect(() => {
-    let mounted = true
-    const init = async () => {
-      try {
-        // 1) try params (supports either awaited promise or plain object)
-        let idFromParams: string | undefined
-        try {
-          const p = await (params as any)
-          idFromParams = p?.id
-        } catch {
-          // params wasn't a promise, try direct
-          idFromParams = (params as any)?.id
-        }
-        if (idFromParams) {
-          if (mounted) setDoctorId(String(idFromParams))
-          return
-        }
-
-        // 2) try auth store doctorId
-        if (user?.doctorId) {
-          if (mounted) setDoctorId(String(user.doctorId))
-          return
-        }
-
-        // 3) fallback: query API by userId
-        if (user?.id) {
-          const res = await fetch(`/api/doctors?userId=${user.id}`)
-          const data = await res.json().catch(() => null)
-          if (data?.data && data.data.length > 0) {
-            if (mounted) setDoctorId(String(data.data[0].id))
-            return
-          } else {
-            if (mounted) setError('Hồ sơ bác sĩ chưa được tạo. Vui lòng liên hệ admin.')
-          }
-        } else {
-          if (mounted) setError('Không xác định user. Vui lòng đăng nhập lại.')
-        }
-      } catch (err) {
-        console.error('Init doctorId error', err)
-        if (mounted) setError('Lỗi khi xác định bác sĩ')
-      }
-    }
-    init()
-    return () => { mounted = false }
-  }, [params, user])
-
   const dateStr = selectedDate.toISOString().split('T')[0]
-  const { rawTimeSlots, isLoading, mutate } = useSchedule(doctorId, dateStr)
+
+
+  const { rawTimeSlots, isLoading: isLoadingSchedule, mutate } = useSchedule(doctorId, dateStr)
 
   useEffect(() => {
-    if (!doctorId) return
-    if (rawTimeSlots?.length > 0) {
+    if (rawTimeSlots && rawTimeSlots.length > 0) {
       const merged = DEFAULT_TIME_SLOTS.map(def => {
         const match = rawTimeSlots.find((s: any) => String(s.id) === String(def.id))
         return match ? { ...def, isAvailable: Boolean(match.isAvailable) } : def
@@ -95,19 +63,19 @@ export default function DoctorSchedule({ params }: { params: Promise<{ id: strin
     } else {
       setTimeSlots(DEFAULT_TIME_SLOTS)
     }
-  }, [rawTimeSlots, doctorId])
+  }, [rawTimeSlots])
 
-  const handleToggleTimeSlot = (id: string | number) => {
+  const handleToggleTimeSlot = (slotId: string | number) => {
     setTimeSlots(slots =>
       slots.map(slot =>
-        String(slot.id) === String(id) ? { ...slot, isAvailable: !slot.isAvailable } : slot
+        String(slot.id) === String(slotId) ? { ...slot, isAvailable: !slot.isAvailable } : slot
       )
     )
   }
 
   const handleSaveSchedule = async () => {
     if (!doctorId) {
-      setError('Không thể xác định thông tin bác sĩ')
+      setError('Không tìm thấy thông tin bác sĩ')
       return
     }
 
@@ -121,15 +89,13 @@ export default function DoctorSchedule({ params }: { params: Promise<{ id: strin
       const updated = await updateSchedule(doctorId, payload)
 
       if (updated?.timeSlots) {
-        setTimeSlots(updated.timeSlots)
-      }
+        const merged = DEFAULT_TIME_SLOTS.map(def => {
+          const match = updated.timeSlots.find((s: any) => String(s.id) === String(def.id))
+          return match ? { ...def, isAvailable: Boolean(match.isAvailable) } : def
+        })
+        setTimeSlots(merged)
 
-      // update SWR cache if available
-      if (mutate) {
-        await mutate(
-          (current: any) => ({ ...(current || {}), timeSlots: timeSlots.map(t => ({ ...t })) }),
-          false
-        )
+        if (mutate) await mutate(updated, false)
       }
 
       setSuccessMessage(`Lịch làm việc ngày ${dateStr} đã được lưu`)
@@ -142,30 +108,57 @@ export default function DoctorSchedule({ params }: { params: Promise<{ id: strin
     }
   }
 
+  if (isLoadingDoctor && !doctorId) {
+    return (
+      <DoctorLayout title="Quản lý lịch làm việc">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          <span className="ml-2 text-gray-500">Đang tải thông tin bác sĩ...</span>
+        </div>
+      </DoctorLayout>
+    )
+  }
+
   return (
     <DoctorLayout title="Quản lý lịch làm việc">
       <Card className="p-6">
-        {error && <div className="mb-4 text-red-700">{error}</div>}
+        {!doctorId && !isLoadingDoctor && (
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded border border-red-200">
+            Tài khoản này chưa được liên kết hồ sơ bác sĩ.
+          </div>
+        )}
+
+        {error && <div className="mb-4 p-2 bg-red-50 text-red-700 rounded">{error}</div>}
+        {successMessage && <div className="mb-4 p-2 bg-green-50 text-green-700 rounded">{successMessage}</div>}
 
         <div className="mb-4">
-          <label className="block text-sm">Chọn ngày</label>
+          <label className="block text-sm font-medium mb-1">Chọn ngày</label>
           <input
             type="date"
             value={dateStr}
             onChange={(e) => setSelectedDate(new Date(e.target.value))}
             min={new Date().toISOString().split('T')[0]}
-            className="mt-2"
+            className="mt-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#92D7EE]"
           />
         </div>
 
         <div>
-          {isLoading ? <p>Đang tải...</p> : (
+          {isLoadingSchedule ? (
+            <p className="text-gray-500 py-4 text-center">Đang tải dữ liệu lịch...</p>
+          ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {timeSlots.map(slot => (
                 <button
                   key={slot.id}
-                  onClick={() => handleToggleTimeSlot(slot.id)}
-                  className={slot.isAvailable ? 'bg-blue-300' : 'bg-gray-100'}
+                  onClick={() => doctorId && handleToggleTimeSlot(slot.id)}
+                  disabled={!doctorId}
+                  className={`
+                    py-2 px-4 rounded transition-colors font-medium text-sm
+                    ${slot.isAvailable 
+                      ? 'bg-[#92D7EE] text-gray-900 hover:bg-[#7bcce8]' 
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}
+                    ${!doctorId ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
                 >
                   {slot.time}
                 </button>
@@ -174,8 +167,8 @@ export default function DoctorSchedule({ params }: { params: Promise<{ id: strin
           )}
         </div>
 
-        <div className="mt-4">
-          <Button onClick={handleSaveSchedule} disabled={saving || isLoading}>
+        <div className="mt-6 border-t pt-4">
+          <Button onClick={handleSaveSchedule} disabled={saving || isLoadingSchedule || !doctorId}>
             {saving ? 'Đang lưu...' : 'Lưu lịch làm việc'}
           </Button>
         </div>

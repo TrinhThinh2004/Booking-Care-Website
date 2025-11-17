@@ -39,9 +39,10 @@ async function getDoctorsBySpecialtyFromDb(specialtyId: number): Promise<Doctor[
 
 
 
-export default async function SpecialtyDoctorsPage({ params }: { params: { specialtyId: string } }) {
+export default async function SpecialtyDoctorsPage({ params }: { params: Promise<{ specialtyId: string }> }) {
   
-  const specialtyId = Number(params.specialtyId);
+  const { specialtyId: specialtyIdStr } = await params;
+  const specialtyId = Number(specialtyIdStr);
   const doctors = Number.isNaN(specialtyId) ? [] : await getDoctorsBySpecialtyFromDb(specialtyId);
 
   return (
