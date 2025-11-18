@@ -1,8 +1,6 @@
 'use client'
 import useSWR from 'swr'
-import { useAuthStore } from '@/stores/auth/authStore'
 import { useMemo } from 'react'
-
 
 interface UseDoctorsOptions {
   specialtyId?: number
@@ -10,8 +8,9 @@ interface UseDoctorsOptions {
   limit?: number
   page?: number
   clientSideFilter?: boolean
-  userId?: number | null
+  userId?: number | null   
 }
+
 export interface Doctor {
   id: number
   firstName?: string
@@ -23,39 +22,45 @@ export interface Doctor {
   image?: string
   isActive?: boolean
   yearsOfExperience?: number
-  yearOfExperience?: number
   createdAt?: string
   userId?: number
 }
 
 export function useDoctors(options: UseDoctorsOptions = {}) {
-  const { user } = useAuthStore()
-  // Nếu options truyền userId, dùng cái đó; nếu không thì dùng user.id từ auth store
-  const userIdToFetch = options.userId ?? user?.id ?? null
-  
-  // SWR key sẽ thay đổi khi userId thay đổi => trigger refetch
-  const key = userIdToFetch 
-    ? ['/api/doctors', userIdToFetch, options.specialtyId, options.search, options.page, options.limit]
-    : null
+
+  const key = [
+    '/api/doctors',
+    options.userId ?? null,
+    options.specialtyId ?? null,
+    options.search ?? '',
+    options.page ?? null,
+    options.limit ?? null
+  ]
 
   const { data, error, isLoading, mutate } = useSWR(
     key,
     async () => {
-      if (!userIdToFetch) return { doctors: [] }
-      
-      // Gọi API với userId filter
-      const url = new URL('/api/doctors', typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
-      url.searchParams.set('userId', String(userIdToFetch))
-      
+      const url = new URL(
+        '/api/doctors',
+        typeof window !== 'undefined'
+          ? window.location.origin
+          : 'http://localhost:3000'
+      )
+
+
+      if (options.userId !== undefined && options.userId !== null) {
+        url.searchParams.set('userId', String(options.userId))
+      }
+
       const res = await fetch(url.toString(), { cache: 'no-store' })
-      const data = await res.json()
-      
-      if (!data.success) throw new Error(data.message || 'Lỗi khi tải danh sách bác sĩ')
-      
-      const response = data.data
+      const json = await res.json()
+
+      if (!json.success) throw new Error(json.message || 'Lỗi tải bác sĩ')
+
+      const response = json.data
+
       if (Array.isArray(response)) {
-        const normalized = response.map((d: any) => {
-          const plain = d
+        const normalized = response.map((plain: any) => {
           const userObj = plain.user || plain.User || {}
           const specialty = plain.specialty || plain.Specialty || null
           const clinic = plain.clinic || plain.Clinic || {}
@@ -66,9 +71,9 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
             lastName: userObj.lastName || plain.lastName || '',
             name: `${(userObj.firstName || plain.firstName || '').trim()} ${(userObj.lastName || plain.lastName || '').trim()}`.trim(),
             email: userObj.email || plain.email || '',
-            specialtyId: specialty?.id || plain.specialtyId || plain.SpecialtyId || null,
+            specialtyId: specialty?.id || plain.specialtyId || null,
             specialtyName: specialty?.name || plain.specialtyName || 'Chưa cập nhật',
-            clinicId: clinic?.id || plain.clinicId || plain.ClinicId || null,
+            clinicId: clinic?.id || plain.clinicId || null,
             clinicName: clinic.name || plain.clinicName || '',
             userId: userObj.id || plain.userId || null,
             description: plain.description || '',
@@ -78,8 +83,10 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
             createdAt: plain.createdAt,
           }
         })
+
         return { doctors: normalized }
       }
+
       if (response?.doctors) return { doctors: response.doctors }
       if (response?.data && Array.isArray(response.data)) return { doctors: response.data }
       return { doctors: [] }
@@ -92,9 +99,9 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
     }
   )
 
+
   const filtered = useMemo(() => {
     const all = (data?.doctors as Doctor[]) || []
-
     let list = all
 
     if (options.specialtyId) {
@@ -103,13 +110,13 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
 
     if (options.search) {
       const s = options.search.toLowerCase()
-      list = list.filter(d => (
+      list = list.filter(d => 
         (d.firstName || '').toLowerCase().includes(s) ||
         (d.lastName || '').toLowerCase().includes(s) ||
         (d.name || '').toLowerCase().includes(s) ||
         (d.specialtyName || '').toLowerCase().includes(s) ||
         (d.clinicName || '').toLowerCase().includes(s)
-      ))
+      )
     }
 
     if (options.page && options.limit) {
@@ -119,7 +126,7 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
     }
 
     return list
-  }, [data?.doctors, options.search, options.specialtyId, options.page, options.limit])
+  }, [data, options.search, options.specialtyId, options.page, options.limit])
 
   return {
     doctors: filtered,

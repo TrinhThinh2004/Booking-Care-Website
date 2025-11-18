@@ -52,12 +52,12 @@ export const DoctorList = () => {
   }, [])
 
   const handleDoctorClick = (doctorId: number) => {
-    router.push(`/doctors/${doctorId}`)
+    router.push(`/doctors/${doctorId}/booking`)
   }
 
   const handleBookAppointment = (doctorId: number, e: React.MouseEvent) => {
     e.stopPropagation()
-    router.push(`/booking?doctorId=${doctorId}`)
+   router.push(`/doctors/${doctorId}/booking`)
   }
 
   if (isLoading) {

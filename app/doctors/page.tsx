@@ -7,16 +7,21 @@ import { Calendar, MapPin, Phone, Search } from 'lucide-react'
 import { useDoctors } from '@/lib/hooks/useDoctors'
 import { Input } from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-
+import { useRouter } from 'next/navigation'
 export default function DoctorsPage() {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const { doctors, isLoading, error } = useDoctors({
     search: searchQuery || undefined,
     page: currentPage,
-    // limit: 12,
+    limit: 12,
     clientSideFilter: true,
   })
+  const handleDoctorClick = (doctorId: number) => {
+    router.push(`/doctors/${doctorId}/booking`)
+  }
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -61,6 +66,7 @@ export default function DoctorsPage() {
                 <div
                   key={doc.id}
                   className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-200 flex flex-col"
+                  onClick={() => handleDoctorClick(doc.id)}
                 >
                   <div className="flex items-center p-6 grow">
 
@@ -69,10 +75,10 @@ export default function DoctorsPage() {
                         src={doc.image}
                         alt={doc.name}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const t = e.target as HTMLImageElement
-                          t.src = '/images/doctor/default.png'
-                        }}
+                        // onError={(e) => {
+                        //   const t = e.target as HTMLImageElement
+                        //   t.src = '/images/doctor/default.png'
+                        // }}
                       />
                     </div>
 

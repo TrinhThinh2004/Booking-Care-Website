@@ -10,7 +10,7 @@ export function useClinics() {
     revalidateOnReconnect: true
   })
 
-  // Transform the data to match the API response structure
+
   const formattedData = data ? {
     clinics: data.clinics
   } : null
