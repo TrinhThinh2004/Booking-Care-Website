@@ -17,7 +17,7 @@ export async function GET(
       include: [
         { model: DB.User, as: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] },
         { model: DB.Specialty, as: 'specialty', attributes: ['id', 'name'] },
-        { model: DB.Clinic, as: 'clinic', attributes: ['id', 'name'] },
+        { model: DB.Clinic, as: 'clinic', attributes: ['id', 'name', 'address', 'phone', 'image'] },
         { model: DB.Markdown, as: 'markdown' },
       ],
     })

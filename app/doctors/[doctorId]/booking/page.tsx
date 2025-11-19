@@ -6,17 +6,12 @@ interface Props {
   };
 }
 
-export default function Page({ params }: Props) {
-  const { doctorId } = params;
+export default async function Page({ params }: Props) {
+  const { doctorId } = await params;
 
   return (
     <><Header />
     <div>
-    
-
-      {/* BookingForm is a client component that will fetch doctor details and handle submit */}
-      {/* Passing doctorId so it can request doctor info */}
-      {/* eslint-disable-next-line react/jsx-no-undef */}
       <BookingForm doctorId={doctorId} />
     </div>
     </>

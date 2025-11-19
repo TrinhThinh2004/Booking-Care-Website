@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-
+import toast from "react-hot-toast";
 type DoctorMini = {
   id: number;
   name: string;
@@ -12,19 +12,7 @@ type DoctorMini = {
   avatarUrl?: string | null;
 };
 
-const mockTimeSlots = [
-  "09:00 - 09:30",
-  "09:30 - 10:00",
-  "10:00 - 10:30",
-  "10:30 - 11:00",
-  "11:00 - 11:30",
-  "11:30 - 12:00",
-  "12:00 - 12:30",
-  "14:00 - 14:30",
-  "14:30 - 15:00",
-  "15:00 - 15:30",
-  "15:30 - 16:00",
-];
+
 const mockProvinces = [
   { value: "Hanoi", label: "Hà Nội" },
   { value: "HCM", label: "TP.HCM" },
@@ -41,8 +29,9 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
   const [doctor, setDoctor] = useState<DoctorMini | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [date, setDate] = useState<string>("2025-11-13");
-  const [timeSlot, setTimeSlot] = useState<string | null>("14:00 - 15:00");
+  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [timeSlot, setTimeSlot] = useState<string | null>(null);
+  const [availableSlots, setAvailableSlots] = useState<{ id: string; time?: string; isAvailable: boolean }[]>([]);
   const [patientName, setPatientName] = useState("");
   const [gender, setGender] = useState<"male" | "female">("male");
   const [phone, setPhone] = useState("");
@@ -70,13 +59,17 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
       })
       .then((data) => {
         if (!mounted) return;
+
+        const payload = data?.data?.doctor ?? data?.doctor ?? data;
+       
+
         const d: DoctorMini = {
-          id: data?.id || Number(doctorId),
-          name: data?.name || data?.user?.name || `Bác sĩ ${doctorId}`,
-          title: data?.title || data?.user?.position || undefined,
-          clinic: data?.clinic || (data?.clinicName ? { name: data.clinicName, address: data.clinicAddress } : null),
-          price: data?.price ?? data?.clinic?.price ?? 500000,
-          avatarUrl: data?.image || data?.avatarUrl || data?.user?.image || null,
+          id: payload?.id || Number(doctorId),
+          name: payload?.user ? `${payload.user.firstName || ''} ${payload.user.lastName || ''}`.trim() || payload?.name || `Bác sĩ ${doctorId}` : payload?.name || `Bác sĩ ${doctorId}`,
+          title: payload?.title || payload?.introduction || undefined,
+          clinic: payload?.clinic ? { name: payload.clinic.name, address: payload.clinic.address || '' } : (payload?.clinicName ? { name: payload.clinicName, address: payload.clinicAddress } : null),
+          price: payload?.price ?? (payload?.clinic?.price) ?? 500000,
+          avatarUrl: payload?.image || payload?.avatarUrl || (payload?.user?.image) || null,
         };
         setDoctor(d);
       })
@@ -103,6 +96,40 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
     };
   }, [doctorId]);
 
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchRange = async () => {
+      try {
+        const start = date;
+        const res = await fetch(`/api/doctors/${doctorId}/schedule?start=${start}&days=6`);
+        if (!res.ok) throw new Error('Failed to fetch schedule range');
+        const data = await res.json();
+        if (!mounted) return;
+  
+        if (Array.isArray(data)) {
+          const today = data[0];
+          setAvailableSlots(Array.isArray(today?.timeSlots) ? today.timeSlots : []);
+          const first = (Array.isArray(today?.timeSlots) ? today.timeSlots.find((s: any) => s.isAvailable) : null);
+          if (first) setTimeSlot(first.time ?? `${first.id}`);
+        } else if (data && data.timeSlots) {
+          setAvailableSlots(Array.isArray(data.timeSlots) ? data.timeSlots : []);
+          const first = Array.isArray(data.timeSlots) ? data.timeSlots.find((s: any) => s.isAvailable) : null;
+          if (first) setTimeSlot(first.time ?? `${first.id}`);
+        } else {
+          setAvailableSlots([]);
+        }
+      } catch (err) {
+        console.error('Error fetching schedule range', err);
+        setAvailableSlots([]);
+      }
+    };
+
+    fetchRange();
+
+    return () => { mounted = false };
+  }, [doctorId, date]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMessage(null);
@@ -114,7 +141,9 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
     
   };
 
-  if (loading) return <div>Đang tải thông tin...</div>;
+  if (loading) {
+    return toast.loading("Đang tải thông tin...");
+  }
   
   const filteredDistricts = mockDistricts.filter(d => d.province === province);
 
@@ -143,12 +172,12 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
 
             {date && timeSlot && (
               <p className="text-sm font-semibold text-gray-800 mt-1">
-                🗓 {timeSlot} - {new Date(date).toLocaleDateString("vi-VN", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" })}
+                 {timeSlot} - {new Date(date).toLocaleDateString("vi-VN", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" })}
               </p>
             )}
 
             <p className="text-sm text-gray-600 mt-1">
-              📍 {doctor?.clinic?.name} — {doctor?.clinic?.address}
+               {doctor?.clinic?.name} 
             </p>
           </div>
         </div>

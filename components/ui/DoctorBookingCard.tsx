@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link"; 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 
 export interface Doctor {
   id: number;
@@ -25,7 +26,7 @@ interface TimeSlot {
   isAvailable: boolean;
 }
 
-// Mảng tĩnh chứa thông tin giờ mặc định
+
 const DEFAULT_TIME_SLOTS = [
   { id: '1', time: '06:00 - 09:00' },
   { id: '2', time: '09:00 - 10:00' },
@@ -49,6 +50,15 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
   const [selectedDate, setSelectedDate] = useState<string>(getLocalDateString(new Date()));
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSlotSelect = (slot: TimeSlot) => {
+    if (!slot.isAvailable) return;
+    const confirmMsg = `Bạn muốn chọn lịch ${slot.time} ngày ${selectedDate} để khám với Bác sĩ ${doctor.name}?`;
+    const ok = window.confirm(confirmMsg);
+    if (!ok) return;
+    router.push(`/doctors/${doctor.id}/booking?date=${selectedDate}&time=${encodeURIComponent(slot.time)}`);
+  };
 
   useEffect(() => {
     const fetchSchedule = async () => {
@@ -150,7 +160,7 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
               timeSlots.map(slot => (
                 <button
                   key={slot.id}
-                  onClick={() => slot.isAvailable && setSelectedTime(slot.time)}
+                  onClick={() => handleSlotSelect(slot)}
                   disabled={!slot.isAvailable}
                   className={`
                     p-2 rounded text-center text-sm font-medium transition
