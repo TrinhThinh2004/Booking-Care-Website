@@ -1,13 +1,23 @@
-'use client'
+"use client"
 
 import { useState } from 'react'
 import AdminLayout from '../AdminLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { ChevronDown, Search, Filter, Plus, MapPin } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { ChevronDown, Search, Filter, Plus, MapPin, Edit, Trash2 } from 'lucide-react'
+import { useClinics } from '@/lib/hooks/useClinics'
+import { useRouter } from 'next/navigation'
+import { Modal } from '@/components/ui/Modal'
+import ClinicForm from './ClinicForm'
+import { toast } from 'react-hot-toast'
 
 export default function ClinicsPage() {
   const [selectedArea, setSelectedArea] = useState('all')
+  const { data, isLoading, error, mutate, create, update, remove } = useClinics()
+  const clinics = data?.clinics || []
+  const router = useRouter()
+
   const areas = [
     { value: 'all', label: 'Tất cả khu vực' },
     { value: 'north', label: 'Miền Bắc' },
@@ -15,11 +25,61 @@ export default function ClinicsPage() {
     { value: 'south', label: 'Miền Nam' },
   ]
 
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingClinic, setEditingClinic] = useState<any>(null)
+  const [isDeleting, setIsDeleting] = useState<number | null>(null)
+
+  const handleCreate = () => {
+    setEditingClinic(null)
+    setIsModalOpen(true)
+  }
+
+  const handleEdit = (clinic: any) => {
+    setEditingClinic(clinic)
+    setIsModalOpen(true)
+  }
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Bạn có chắc chắn muốn xóa phòng khám này?')) return
+    setIsDeleting(id)
+    try {
+      await remove(id)
+      toast.success('Xóa phòng khám thành công')
+    } catch (e: any) {
+      console.error(e)
+      toast.error(e?.message || 'Xóa thất bại')
+    } finally {
+      setIsDeleting(null)
+    }
+  }
+
+  const handleSubmit = async (payload: any) => {
+    try {
+      if (editingClinic) {
+        await update(editingClinic.id, payload)
+        toast.success('Cập nhật phòng khám thành công')
+      } else {
+        await create(payload)
+        toast.success('Tạo phòng khám thành công')
+      }
+      setIsModalOpen(false)
+      setEditingClinic(null)
+    } catch (error: any) {
+      console.error('Save clinic error:', error)
+      toast.error(error?.message || 'Lỗi khi lưu phòng khám')
+    }
+  }
+
+  const handleCancel = () => {
+    setIsModalOpen(false)
+    setEditingClinic(null)
+  }
+
   return (
     <AdminLayout 
       title="Quản lý phòng khám"
       actions={
-        <Button className="bg-[#92D7EE] hover:bg-[#92D7EE]/90">
+        <Button onClick={handleCreate} className="bg-[#92D7EE] hover:bg-[#92D7EE]/90">
           <Plus className="w-4 h-4 mr-2" />
           Thêm phòng khám
         </Button>
@@ -62,56 +122,64 @@ export default function ClinicsPage() {
           </div>
         </div>
 
-        {/* Grid of clinics */}
+        {/* Clinics table */}
         <div className="p-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                <div className="relative h-40">
-                  <img
-                    src={`/images/clinic/clinic${i + 1}.jpg`}
-                    alt=""
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = 'https://placehold.co/400x200';
-                    }}
-                  />
-                  <span className={`absolute top-2 right-2 px-2 py-1 rounded text-xs font-medium
-                    ${i % 2 === 0 ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                    {i % 2 === 0 ? 'Đang hoạt động' : 'Tạm đóng cửa'}
-                  </span>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-800">Phòng khám {i + 1}</h3>
-                  <p className="mt-1 text-sm text-gray-600 flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {i % 3 === 0 ? 'Hà Nội' : i % 3 === 1 ? 'Đà Nẵng' : 'TP.HCM'}
-                  </p>
-                  
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <p className="text-gray-500">Số bác sĩ</p>
-                      <p className="font-medium">{10 + i}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Lịch hẹn/ngày</p>
-                      <p className="font-medium">{20 + i * 5}</p>
-                    </div>
-                  </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hình ảnh</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Địa chỉ</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Số bác sĩ</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-8 text-center">
+                      <LoadingSpinner size="lg" />
+                    </td>
+                  </tr>
+                ) : clinics.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">Chưa có phòng khám</td>
+                  </tr>
+                ) : (
+                  clinics.map((clinic: any) => (
+                    <tr key={clinic.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{clinic.id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="h-10 w-20 rounded overflow-hidden bg-gray-100">
+                          <img
+                            src={clinic.image ? (clinic.image.startsWith('http') ? clinic.image : clinic.image.startsWith('/') ? clinic.image : `/images/Clinic/${clinic.image}`) : 'https://placehold.co/80x50'}
+                            alt={clinic.name}
+                            className="h-full w-full object-cover"
+                            onError={(e) => (e.currentTarget.src = 'https://placehold.co/80x50')}
+                          />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{clinic.name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{clinic.address || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{clinic.doctors?.length ?? 0}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${clinic.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{clinic.isActive ? 'Đang hoạt động' : 'Tạm đóng'}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
 
-                  <div className="mt-4 flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 text-gray-700">
-                      Chi tiết
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1 text-[#92D7EE] border-[#92D7EE] hover:bg-[#92D7EE]/10">
-                      Sửa
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(clinic)} className="text-[#92D7EE] border-[#92D7EE] hover:bg-[#92D7EE]/10"><Edit className="w-4 h-4 mr-1" />Sửa</Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDelete(clinic.id)} disabled={isDeleting === clinic.id}>{isDeleting === clinic.id ? <LoadingSpinner size="sm" /> : (<><Trash2 className="w-4 h-4 mr-1" />Xóa</>)}</Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -119,7 +187,7 @@ export default function ClinicsPage() {
         <div className="p-4 border-t">
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600">
-              Hiển thị 1-6 trong số 24 phòng khám
+              Hiển thị {clinics.length > 0 ? `1-${clinics.length}` : '0'} trong số {clinics.length} phòng khám
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="text-gray-700" disabled>
@@ -132,6 +200,13 @@ export default function ClinicsPage() {
           </div>
         </div>
       </Card>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCancel}
+        title={editingClinic ? 'Sửa phòng khám' : 'Thêm phòng khám mới'}
+      >
+        <ClinicForm initialData={editingClinic} onSubmit={handleSubmit} onCancel={handleCancel} />
+      </Modal>
     </AdminLayout>
   )
 }

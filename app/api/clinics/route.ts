@@ -73,3 +73,30 @@ export async function GET() {
     )
   }
 }
+
+// POST - create clinic
+export async function POST(req: Request) {
+  try {
+    const body = await req.json()
+    const { name, address, phone, image, operatingHours, description } = body
+
+    if (!name) {
+      return NextResponse.json({ success: false, message: 'Tên phòng khám là bắt buộc' }, { status: 400 })
+    }
+
+    const clinic = await DB.Clinic.create({
+      name,
+      address: address || null,
+      phone: phone || null,
+      image: image || null,
+      operatingHours: operatingHours || null,
+      description: description || null,
+      isActive: true
+    })
+
+    return NextResponse.json({ success: true, message: 'Tạo phòng khám thành công', data: { clinic } }, { status: 201 })
+  } catch (error: any) {
+    console.error('Create clinic error:', error)
+    return NextResponse.json({ success: false, message: 'Lỗi server', error: error?.message || String(error) }, { status: 500 })
+  }
+}
