@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link"; 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from 'next/navigation';
 
 export interface Doctor {
@@ -45,9 +45,10 @@ const getLocalDateString = (date: Date) => {
   return localDate.toISOString().split('T')[0];
 };
 
-export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
+export default function DoctorBookingCard({ doctor, initialDate, initialTime }: { doctor: Doctor, initialDate?: string, initialTime?: string }) {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(getLocalDateString(new Date()));
+  const cardRef = useRef<HTMLDivElement | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -91,6 +92,13 @@ export default function DoctorBookingCard({ doctor }: { doctor: Doctor }) {
 
     fetchSchedule();
   }, [doctor.id, selectedDate]);
+
+  // apply initial date/time from props (when navigating with query params)
+  useEffect(() => {
+    if (initialDate) setSelectedDate(initialDate as string);
+    if (initialTime) setSelectedTime(initialTime as string);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialDate, initialTime]);
 
   const generateDates = () => {
     const dates = [];

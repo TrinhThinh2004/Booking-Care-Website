@@ -52,11 +52,36 @@ export const DoctorList = () => {
   }, [])
 
   const handleDoctorClick = (doctorId: number) => {
+    // Prefer navigating to the doctor's specialty page so users can pick a slot there.
+    const doc = doctors.find(d => d.id === doctorId)
+    const specialtyId = (doc as any)?.specialty?.id ?? (doc as any)?.specialtyId
+    const getLocalDateString = (date: Date) => {
+      const offset = date.getTimezoneOffset() * 60000
+      const local = new Date(date.getTime() - offset)
+      return local.toISOString().split('T')[0]
+    }
+    const today = getLocalDateString(new Date())
+    if (specialtyId) {
+      router.push(`/specialties/${specialtyId}?doctorId=${doctorId}&date=${today}`)
+      return
+    }
     router.push(`/doctors/${doctorId}/booking`)
   }
 
   const handleBookAppointment = (doctorId: number, e: React.MouseEvent) => {
     e.stopPropagation()
+   const doc = doctors.find(d => d.id === doctorId)
+   const specialtyId = (doc as any)?.specialty?.id ?? (doc as any)?.specialtyId
+   const getLocalDateString = (date: Date) => {
+     const offset = date.getTimezoneOffset() * 60000
+     const local = new Date(date.getTime() - offset)
+     return local.toISOString().split('T')[0]
+   }
+   const today = getLocalDateString(new Date())
+   if (specialtyId) {
+     router.push(`/specialties/${specialtyId}?doctorId=${doctorId}&date=${today}`)
+     return
+   }
    router.push(`/doctors/${doctorId}/booking`)
   }
 

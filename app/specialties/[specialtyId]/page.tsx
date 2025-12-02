@@ -39,11 +39,20 @@ async function getDoctorsBySpecialtyFromDb(specialtyId: number): Promise<Doctor[
 
 
 
-export default async function SpecialtyDoctorsPage({ params }: { params: Promise<{ specialtyId: string }> }) {
-  
+export default async function SpecialtyDoctorsPage({ params, searchParams }: { params: Promise<{ specialtyId: string }>, searchParams?: Promise<{ [key: string]: string | string[] }> }) {
   const { specialtyId: specialtyIdStr } = await params;
   const specialtyId = Number(specialtyIdStr);
   const doctors = Number.isNaN(specialtyId) ? [] : await getDoctorsBySpecialtyFromDb(specialtyId);
+
+  // Await searchParams when provided (Next may pass a Promise for streaming).
+  const sp = searchParams ? await searchParams : undefined;
+
+  // If a `doctorId` query param is present, show only that doctor so the
+  // specialty page behaves like the booking-entry flow (single-doctor view).
+  const doctorIdQuery = sp && typeof sp.doctorId === 'string' ? Number(sp.doctorId) : undefined;
+  const preselectDate = sp && typeof sp.date === 'string' ? sp.date : undefined;
+  const preselectTime = sp && typeof sp.time === 'string' ? decodeURIComponent(sp.time) : undefined;
+  const displayedDoctors = doctorIdQuery ? doctors.filter(d => d.id === doctorIdQuery) : doctors;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -61,8 +70,13 @@ export default async function SpecialtyDoctorsPage({ params }: { params: Promise
               </div>
             ) : (
   
-              doctors.map((doc: Doctor) => (
-                <DoctorBookingCard key={doc.id} doctor={doc} />
+              displayedDoctors.map((doc: Doctor) => (
+                <DoctorBookingCard
+                  key={doc.id}
+                  doctor={doc}
+                  initialDate={doctorIdQuery && doc.id === doctorIdQuery ? preselectDate : undefined}
+                  initialTime={doctorIdQuery && doc.id === doctorIdQuery ? preselectTime : undefined}
+                />
               ))
             )}
           </div>

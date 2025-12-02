@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { useSearchParams } from 'next/navigation'
 type DoctorMini = {
   id: number;
   name: string;
@@ -108,14 +109,18 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
         if (!mounted) return;
   
         if (Array.isArray(data)) {
-          const today = data[0];
-          setAvailableSlots(Array.isArray(today?.timeSlots) ? today.timeSlots : []);
-          const first = (Array.isArray(today?.timeSlots) ? today.timeSlots.find((s: any) => s.isAvailable) : null);
-          if (first) setTimeSlot(first.time ?? `${first.id}`);
+          // find entry matching currently selected date, fallback to first
+          const today = data.find((d: any) => d.date === date) || data[0];
+          const slots = Array.isArray(today?.timeSlots) ? today.timeSlots : [];
+          setAvailableSlots(slots);
+          const first = slots.find((s: any) => s.isAvailable) ?? null;
+          // only set default timeSlot when not already selected
+          if (first) setTimeSlot(prev => prev ?? (first.time ?? `${first.id}`));
         } else if (data && data.timeSlots) {
-          setAvailableSlots(Array.isArray(data.timeSlots) ? data.timeSlots : []);
-          const first = Array.isArray(data.timeSlots) ? data.timeSlots.find((s: any) => s.isAvailable) : null;
-          if (first) setTimeSlot(first.time ?? `${first.id}`);
+          const slots = Array.isArray(data.timeSlots) ? data.timeSlots : [];
+          setAvailableSlots(slots);
+          const first = slots.find((s: any) => s.isAvailable) ?? null;
+          if (first) setTimeSlot(prev => prev ?? (first.time ?? `${first.id}`));
         } else {
           setAvailableSlots([]);
         }
@@ -130,6 +135,20 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
     return () => { mounted = false };
   }, [doctorId, date]);
 
+  // read date/time from query params (so links with ?date=...&time=... work)
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    try {
+      const qDate = searchParams?.get('date')
+      const qTime = searchParams?.get('time') || searchParams?.get('timeSlot')
+      if (qDate) setDate(qDate)
+      if (qTime) setTimeSlot(decodeURIComponent(qTime))
+    } catch (e) {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMessage(null);
@@ -141,9 +160,14 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
     
   };
 
-  if (loading) {
-    return toast.loading("Đang tải thông tin...");
-  }
+ if (loading) {
+  return (
+    <div className="w-full text-center py-6 text-gray-600">
+      Đang tải thông tin...
+    </div>
+  );
+}
+
   
   const filteredDistricts = mockDistricts.filter(d => d.province === province);
 
