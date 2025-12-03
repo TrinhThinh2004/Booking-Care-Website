@@ -10,8 +10,8 @@ type Props = {
 export default function SideNav({ pathname }: Props) {
   const items = [
     { to: '/dashboard', label: 'Tổng quan', icon: <Clock /> },
-    { to: '/dashboard/booking', label: 'Đặt lịch khám', icon: <Calendar /> },
-    { to: '/dashboard/my-bookings', label: 'Lịch hẹn của tôi', icon: <Clock /> },
+    // { to: '/dashboard/booking', label: 'Đặt lịch khám', icon: <Calendar /> },
+    { to: '/dashboard/my-bookings', label: 'Lịch hẹn của tôi', icon: <Calendar /> },
   ]
 
   return (

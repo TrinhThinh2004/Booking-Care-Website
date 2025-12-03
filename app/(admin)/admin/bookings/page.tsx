@@ -1,161 +1,231 @@
 'use client'
 
-import { useState } from 'react'
 import AdminLayout from '../AdminLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { ChevronDown, Search, Filter, Calendar } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Loader2 } from 'lucide-react'
+import toast from 'react-hot-toast'
 
-export default function BookingsPage() {
-  const [selectedStatus, setSelectedStatus] = useState('all')
-  const statuses = [
-    { value: 'all', label: 'Tất cả' },
-    { value: 'pending', label: 'Chờ xác nhận' },
-    { value: 'confirmed', label: 'Đã xác nhận' },
-    { value: 'completed', label: 'Đã hoàn thành' },
-    { value: 'cancelled', label: 'Đã hủy' },
+type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
+
+interface Booking {
+  id: number
+  patientId: number
+  doctorId: number
+  date: string
+  timeSlot: string
+  reason: string
+  status: BookingStatus
+  createdAt: string
+  patient?: { firstName: string; lastName: string; email: string; phone?: string }
+  doctor?: { user?: { firstName: string; lastName: string }; clinic?: { name: string } }
+}
+
+export default function AdminBookingsPage() {
+  const [activeTab, setActiveTab] = useState<BookingStatus>('PENDING')
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch('/api/bookings')
+        const data = await res.json()
+        if (data.success) {
+          setBookings(data.data || [])
+        } else {
+          toast.error(data.message || 'Không thể tải lịch khám')
+        }
+      } catch (error) {
+        console.error('Error fetching bookings:', error)
+        toast.error('Lỗi khi tải lịch khám')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBookings()
+  }, [])
+
+  const handleConfirm = async (bookingId: number) => {
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CONFIRMED' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Lỗi khi xác nhận')
+
+      setBookings(bookings.map(b => b.id === bookingId ? { ...b, status: 'CONFIRMED' } : b))
+      toast.success('Xác nhận lịch khám thành công')
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message || 'Lỗi khi xác nhận')
+    }
+  }
+
+  const handleCancel = async (bookingId: number) => {
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CANCELLED' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Lỗi khi hủy')
+
+      setBookings(bookings.map(b => b.id === bookingId ? { ...b, status: 'CANCELLED' } : b))
+      toast.success('Hủy lịch khám thành công')
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message || 'Lỗi khi hủy')
+    }
+  }
+
+  const statusTabs: { value: BookingStatus; label: string }[] = [
+    { value: 'PENDING', label: 'Chờ xác nhận' },
+    { value: 'CONFIRMED', label: 'Đã xác nhận' },
+    { value: 'CANCELLED', label: 'Đã hủy' },
+    { value: 'COMPLETED', label: 'Đã hoàn thành' },
   ]
 
+  let filteredBookings = bookings.filter(b => b.status === activeTab)
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase()
+    filteredBookings = filteredBookings.filter(b =>
+      (b.patient?.firstName + ' ' + b.patient?.lastName).toLowerCase().includes(q) ||
+      b.patient?.email?.toLowerCase().includes(q) ||
+      (b.doctor?.user?.firstName + ' ' + b.doctor?.user?.lastName).toLowerCase().includes(q)
+    )
+  }
+
+  if (loading) {
+    return (
+      <AdminLayout title="Quản lý lịch hẹn">
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          <span className="ml-2 text-gray-500">Đang tải lịch hẹn...</span>
+        </div>
+      </AdminLayout>
+    )
+  }
+
   return (
-    <AdminLayout 
-      title="Quản lý lịch hẹn"
-      actions={
-        <div className="flex gap-2">
-          <Button variant="outline" className="text-gray-700">
-            <Calendar className="w-4 h-4 mr-2" />
-            Lọc theo ngày
-          </Button>
-          <Button className="bg-[#92D7EE] hover:bg-[#92D7EE]/90">
-            Xuất báo cáo
-          </Button>
-        </div>
-      }
-    >
+    <AdminLayout title="Quản lý lịch hẹn">
+      {/* Status Tabs */}
+      <div className="flex gap-4 mb-6 flex-wrap">
+        {statusTabs.map(tab => (
+          <button
+            key={tab.value}
+            onClick={() => setActiveTab(tab.value)}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors
+              ${activeTab === tab.value 
+                ? 'bg-[#92D7EE] text-gray-900' 
+                : 'bg-white text-gray-900 hover:bg-[#F7D800] border border-gray-200'
+              }`}
+          >
+            {tab.label} ({bookings.filter(b => b.status === tab.value).length})
+          </button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Tìm kiếm theo tên bệnh nhân, email, bác sĩ..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#92D7EE]"
+        />
+      </div>
+
+      {/* Bookings Table */}
       <Card>
-        {/* Filters */}
-        <div className="p-4 border-b">
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm theo tên bệnh nhân, bác sĩ..."
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#92D7EE]"
-                />
-              </div>
-            </div>
-            
-            <div className="relative">
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="appearance-none w-full min-w-[150px] pl-4 pr-10 py-2 border rounded-lg text-sm focus:outline-none focus:border-[#92D7EE] cursor-pointer"
-              >
-                {statuses.map(status => (
-                  <option key={status.value} value={status.value}>
-                    {status.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-            </div>
-
-            <Button variant="outline" className="text-gray-700">
-              <Filter className="w-4 h-4 mr-2" />
-              Lọc thêm
-            </Button>
+        {filteredBookings.length === 0 ? (
+          <div className="p-6 text-center text-gray-500">
+            Không có lịch hẹn nào.
           </div>
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 text-sm text-gray-600">
-              <tr>
-                <th className="py-4 px-6 text-left font-medium">Mã lịch hẹn</th>
-                <th className="py-4 px-6 text-left font-medium">Bệnh nhân</th>
-                <th className="py-4 px-6 text-left font-medium">Bác sĩ</th>
-                <th className="py-4 px-6 text-left font-medium">Ngày giờ</th>
-                <th className="py-4 px-6 text-left font-medium">Trạng thái</th>
-                <th className="py-4 px-6 text-left font-medium">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y text-sm">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="hover:bg-gray-50">
-                  <td className="py-4 px-6">
-                    <span className="font-medium">#{1000 + i}</span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div>
-                      <p className="font-medium">Nguyễn Văn A</p>
-                      <p className="text-gray-500">0912345678</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div>
-                      <p className="font-medium">BS. Trần Văn B</p>
-                      <p className="text-gray-500">Khoa Tim mạch</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div>
-                      <p className="font-medium">24/11/2025</p>
-                      <p className="text-gray-500">09:00 - 10:00</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${i % 4 === 0 ? 'bg-yellow-50 text-yellow-700' :
-                        i % 4 === 1 ? 'bg-green-50 text-green-700' :
-                        i % 4 === 2 ? 'bg-blue-50 text-blue-700' :
-                        'bg-red-50 text-red-700'}`}>
-                      {i % 4 === 0 ? 'Chờ xác nhận' :
-                        i % 4 === 1 ? 'Đã xác nhận' :
-                        i % 4 === 2 ? 'Đã hoàn thành' :
-                        'Đã hủy'}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="text-gray-700">
-                        Chi tiết
-                      </Button>
-                      {i % 4 === 0 && (
-                        <>
-                          <Button size="sm" className="bg-[#92D7EE] hover:bg-[#92D7EE]/90">
-                            Xác nhận
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 border-red-600 hover:bg-red-50">
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-gray-50">
+                  <th className="text-left p-4 font-semibold text-gray-700">Bệnh nhân</th>
+                  <th className="text-left p-4 font-semibold text-gray-700">Liên hệ</th>
+                  <th className="text-left p-4 font-semibold text-gray-700">Bác sĩ</th>
+                  <th className="text-left p-4 font-semibold text-gray-700">Ngày / Giờ</th>
+                  <th className="text-left p-4 font-semibold text-gray-700">Lý do</th>
+                  <th className="text-center p-4 font-semibold text-gray-700">Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredBookings.map(booking => (
+                  <tr key={booking.id} className="border-b hover:bg-gray-50 transition-colors">
+                    <td className="p-4 font-medium text-gray-900">
+                      {booking.patient?.firstName} {booking.patient?.lastName}
+                    </td>
+                    <td className="p-4 text-gray-600">
+                      <div className="text-xs space-y-1">
+                        <div>{booking.patient?.email}</div>
+                        {booking.patient?.phone && <div>{booking.patient.phone}</div>}
+                      </div>
+                    </td>
+                    <td className="p-4 text-gray-600">
+                      <div className="text-sm">
+                        {booking.doctor?.user ? `${booking.doctor.user.firstName} ${booking.doctor.user.lastName}` : 'N/A'}
+                      </div>
+                      <div className="text-xs text-gray-500">{booking.doctor?.clinic?.name || 'N/A'}</div>
+                    </td>
+                    <td className="p-4 text-gray-600">
+                      <div className="text-sm">
+                        {new Date(booking.date).toLocaleDateString('vi-VN', { weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit' })}
+                      </div>
+                      <div className="text-xs text-gray-500">{booking.timeSlot}</div>
+                    </td>
+                    <td className="p-4 text-gray-600 max-w-xs truncate">
+                      {booking.reason}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex gap-2 justify-center flex-wrap">
+                        {booking.status === 'PENDING' && (
+                          <>
+                            <Button
+                              onClick={() => handleConfirm(booking.id)}
+                              className="bg-[#92D7EE] hover:bg-[#7bcce8] text-sm px-3 py-1"
+                            >
+                              Xác nhận
+                            </Button>
+                            <Button
+                              onClick={() => handleCancel(booking.id)}
+                              variant="outline"
+                              className="text-red-600 border-red-600 hover:bg-red-50 text-sm px-3 py-1"
+                            >
+                              Từ chối
+                            </Button>
+                          </>
+                        )}
+                        {booking.status === 'CONFIRMED' && (
+                          <Button
+                            onClick={() => handleCancel(booking.id)}
+                            variant="outline"
+                            className="text-red-600 border-red-600 hover:bg-red-50 text-sm px-3 py-1"
+                          >
                             Từ chối
                           </Button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="p-4 border-t">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              Hiển thị 1-5 trong số 50 lịch hẹn
-            </p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="text-gray-700" disabled>
-                Trước
-              </Button>
-              <Button variant="outline" size="sm" className="text-gray-700">
-                Tiếp
-              </Button>
-            </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+        )}
       </Card>
     </AdminLayout>
   )
