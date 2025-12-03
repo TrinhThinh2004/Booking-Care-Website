@@ -5,6 +5,16 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Calendar, MapPin, Phone, Search } from 'lucide-react'
 import { useDoctors } from '@/lib/hooks/useDoctors'
+
+interface Doctor {
+  id: number
+  name: string
+  image: string
+  specialtyName: string
+  specialtyId: number
+  clinicName: string
+  yearsOfExperience: number
+}
 import { Input } from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useRouter } from 'next/navigation'
@@ -102,7 +112,26 @@ export default function DoctorsPage() {
                   </div>
 
                   <div className="p-4 border-t border-gray-100 flex items-center justify-between">
-                    <button className="text-sm text-[#92D7EE] font-medium hover:underline">Xem hồ sơ</button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        const docSpecialtyId = (doc as Doctor).specialtyId
+                        const getLocalDateString = (date: Date) => {
+                          const offset = date.getTimezoneOffset() * 60000
+                          const local = new Date(date.getTime() - offset)
+                          return local.toISOString().split('T')[0]
+                        }
+                        const today = getLocalDateString(new Date())
+                        if (docSpecialtyId) {
+                          router.push(`/specialties/${docSpecialtyId}?doctorId=${doc.id}&date=${today}`)
+                          return
+                        }
+                        router.push(`/doctors/${doc.id}/booking`)
+                      }}
+                      className="text-sm text-[#92D7EE] font-medium hover:underline"
+                    >
+                      Xem hồ sơ
+                    </button>
                     <div className="text-sm text-gray-500 flex items-center">
                       <Phone className="w-4 h-4 mr-2 text-[#92D7EE]" />
                       <span>Liên hệ</span>

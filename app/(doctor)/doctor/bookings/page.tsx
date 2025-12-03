@@ -3,42 +3,148 @@
 import DoctorLayout from '@/app/(doctor)/doctor/DoctorLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { useState } from 'react'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { useState, useEffect, useMemo } from 'react'
+import { useAuthStore } from '@/stores/auth/authStore'
+import { useDoctors } from '@/lib/hooks/useDoctors'
+import { Loader2 } from 'lucide-react'
+import toast from 'react-hot-toast'
 
-type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled'
+type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
 
-interface Appointment {
-  id: string
-  patientName: string
+interface Booking {
+  id: number
+  patientId: number
+  doctorId: number
   date: string
-  time: string
-  status: AppointmentStatus
+  timeSlot: string
   reason: string
+  status: BookingStatus
+  patient?: { firstName: string; lastName: string; email: string }
 }
 
 export default function DoctorAppointments() {
-  const [activeTab, setActiveTab] = useState<AppointmentStatus>('pending')
-  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const { user } = useAuthStore()
+  const { doctors, isLoading: isLoadingDoctor } = useDoctors()
 
-  const handleConfirm = (id: string) => {
-    setAppointments(appointments.map(app => 
-      app.id === id ? { ...app, status: 'confirmed' } : app
-    ))
+  const doctorId = useMemo(() => {
+    if (!user || !doctors) return null
+    
+    if (user.doctorId) return String(user.doctorId)
+
+    const currentDoc = doctors.find((d: any) => Number(d.userId) === Number(user.id))
+    return currentDoc ? String(currentDoc.id) : null
+  }, [user, doctors])
+
+  const [activeTab, setActiveTab] = useState<BookingStatus>('PENDING')
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!doctorId) return
+    
+    const fetchBookings = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch(`/api/bookings?doctorId=${doctorId}`)
+        const data = await res.json()
+        if (data.success) {
+          setBookings(data.data || [])
+        } else {
+          toast.error(data.message || 'Không thể tải lịch khám')
+        }
+      } catch (error) {
+        console.error('Error fetching bookings:', error)
+        toast.error('Lỗi khi tải lịch khám')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchBookings()
+  }, [doctorId])
+
+  const handleConfirm = async (bookingId: number) => {
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CONFIRMED' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Lỗi khi xác nhận')
+      
+      setBookings(bookings.map(b => b.id === bookingId ? { ...b, status: 'CONFIRMED' } : b))
+      toast.success('Xác nhận lịch khám thành công')
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message || 'Lỗi khi xác nhận')
+    }
   }
 
-  const handleCancel = (id: string) => {
-    setAppointments(appointments.map(app => 
-      app.id === id ? { ...app, status: 'cancelled' } : app
-    ))
+  const handleCancel = async (bookingId: number) => {
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CANCELLED' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Lỗi khi hủy')
+      
+      setBookings(bookings.map(b => b.id === bookingId ? { ...b, status: 'CANCELLED' } : b))
+      toast.success('Hủy lịch khám thành công')
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message || 'Lỗi khi hủy')
+    }
   }
 
-  const filteredAppointments = appointments.filter(app => app.status === activeTab)
+  const handleComplete = async (bookingId: number) => {
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'COMPLETED' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Lỗi khi hoàn thành')
 
-  const statusTabs: { value: AppointmentStatus; label: string }[] = [
-    { value: 'pending', label: 'Chờ xác nhận' },
-    { value: 'confirmed', label: 'Đã xác nhận' },
-    { value: 'cancelled', label: 'Đã hủy' }
+      setBookings(bookings.map(b => b.id === bookingId ? { ...b, status: 'COMPLETED' } : b))
+      toast.success('Đã đánh dấu hoàn thành')
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message || 'Lỗi khi hoàn thành')
+    }
+  }
+
+  const filteredBookings = bookings.filter(b => b.status === activeTab)
+
+  const statusTabs: { value: BookingStatus; label: string }[] = [
+    { value: 'PENDING', label: 'Chờ xác nhận' },
+    { value: 'CONFIRMED', label: 'Đã xác nhận' },
+    { value: 'CANCELLED', label: 'Đã hủy' },
+    { value: 'COMPLETED', label: 'Đã hoàn thành' },
   ]
+
+  if (loading || (isLoadingDoctor && !doctorId)) {
+    return (
+      <DoctorLayout title="Quản lý lịch hẹn">
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          <span className="ml-2 text-gray-500">Đang tải lịch hẹn...</span>
+        </div>
+      </DoctorLayout>
+    )
+  }
+
+  if (!doctorId && !isLoadingDoctor) {
+    return (
+      <DoctorLayout title="Quản lý lịch hẹn">
+        <div className="p-6 text-center text-red-600">Tài khoản này chưa được liên kết hồ sơ bác sĩ.</div>
+      </DoctorLayout>
+    )
+  }
 
   return (
     <DoctorLayout title="Quản lý lịch hẹn">
@@ -61,37 +167,58 @@ export default function DoctorAppointments() {
 
       {/* Appointments List */}
       <Card>
-        {filteredAppointments.length === 0 ? (
+        {filteredBookings.length === 0 ? (
           <div className="p-6 text-center text-gray-500">
-            Không có lịch hẹn nào {activeTab === 'pending' ? 'chờ xác nhận' : activeTab === 'confirmed' ? 'đã xác nhận' : 'đã hủy'}.
+            Không có lịch hẹn nào {activeTab === 'PENDING' ? 'chờ xác nhận' : activeTab === 'CONFIRMED' ? 'đã xác nhận' : activeTab === 'CANCELLED' ? 'đã hủy' : 'đã hoàn thành'}.
           </div>
         ) : (
           <div className="divide-y">
-            {filteredAppointments.map(appointment => (
-              <div key={appointment.id} className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">{appointment.patientName}</h3>
+            {filteredBookings.map(booking => (
+              <div key={booking.id} className="p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {booking.patient?.firstName} {booking.patient?.lastName}
+                    </h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      {appointment.date} - {appointment.time}
+                      {new Date(booking.date).toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' })} - {booking.timeSlot}
                     </p>
-                    <p className="mt-2 text-sm text-gray-700">{appointment.reason}</p>
+                    <p className="mt-2 text-sm text-gray-700"><span className="font-semibold">Lý do:</span> {booking.reason}</p>
+                    <p className="mt-1 text-sm text-gray-600"><span className="font-semibold">Email:</span> {booking.patient?.email}</p>
                   </div>
                   
-                  {appointment.status === 'pending' && (
-                    <div className="flex gap-3">
+                  {booking.status === 'PENDING' && (
+                    <div className="flex gap-2 shrink-0">
                       <Button
-                        onClick={() => handleConfirm(appointment.id)}
+                        onClick={() => handleConfirm(booking.id)}
                         className="bg-[#92D7EE] hover:bg-[#92D7EE]/90"
                       >
                         Xác nhận
                       </Button>
                       <Button
-                        onClick={() => handleCancel(appointment.id)}
+                        onClick={() => handleCancel(booking.id)}
                         variant="outline"
                         className="text-red-600 border-red-600 hover:bg-red-50"
                       >
-                        Từ chối
+                        Hủy
+                      </Button>
+                    </div>
+                  )}
+
+                  {booking.status === 'CONFIRMED' && (
+                    <div className="flex gap-2 shrink-0">
+                      <Button
+                        onClick={() => handleComplete(booking.id)}
+                        className="bg-[#92D7EE] hover:bg-[#92D7EE]/90"
+                      >
+                        Hoàn thành
+                      </Button>
+                      <Button
+                        onClick={() => handleCancel(booking.id)}
+                        variant="outline"
+                        className="text-red-600 border-red-600 hover:bg-red-50"
+                      >
+                        Hủy
                       </Button>
                     </div>
                   )}

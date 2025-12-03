@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { useAuthStore } from '@/stores/auth/authStore'
 import { useSearchParams } from 'next/navigation'
 type DoctorMini = {
   id: number;
@@ -23,24 +24,39 @@ const mockDistricts = [
   { value: "BaDinh", label: "Ba Đình", province: "Hanoi" },
   { value: "HoanKiem", label: "Hoàn Kiếm", province: "Hanoi" },
   { value: "Q1", label: "Quận 1", province: "HCM" },
+  { value: "Q3", label: "Quận 3", province: "HCM" },
+  {value:"Q4", label:"Quận 4", province:"HCM"},
+  {value:"Q12", label:"Quận 12", province:"HCM"},
   { value: "HaiChau", label: "Hải Châu", province: "DaNang" },
 ];
 
 export default function BookingForm({ doctorId }: { doctorId: string }) {
+  const { user } = useAuthStore()
   const [doctor, setDoctor] = useState<DoctorMini | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [timeSlot, setTimeSlot] = useState<string | null>(null);
   const [availableSlots, setAvailableSlots] = useState<{ id: string; time?: string; isAvailable: boolean }[]>([]);
-  const [patientName, setPatientName] = useState("");
-  const [gender, setGender] = useState<"male" | "female">("male");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [birthYear, setBirthYear] = useState("");
+  const [patientName, setPatientName] = useState(user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : "");
+  const [gender, setGender] = useState<"male" | "female">(user?.gender === 'FEMALE' ? 'female' : 'male');
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [birthYear, setBirthYear] = useState((user && (user as any).birthYear) ? String((user as any).birthYear) : "");
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState(user?.address || "");
+    // Nếu user thay đổi (login/logout), tự động điền lại nếu input đang rỗng
+    React.useEffect(() => {
+      if (user) {
+        setPatientName(prev => prev || (`${user.firstName || ''} ${user.lastName || ''}`.trim()));
+        setPhone(prev => prev || user.phone || "");
+        setEmail(prev => prev || user.email || "");
+        setAddress(prev => prev || user.address || "");
+        setBirthYear(prev => prev || ((user as any).birthYear ? String((user as any).birthYear) : ""));
+        setGender(prev => prev || (user?.gender === 'FEMALE' ? 'female' : 'male'));
+      }
+    }, [user]);
   const [reason, setReason] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<string>("cash");
   
@@ -96,6 +112,13 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
       mounted = false;
     };
   }, [doctorId]);
+
+  // placeholders derived from logged in account (do not overwrite user input)
+  const namePlaceholder = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Vd: Trần Văn Phú' : 'Vd: Trần Văn Phú'
+  const phonePlaceholder = user?.phone || 'Vd: 0912345678'
+  const emailPlaceholder = user?.email || 'Vd: example@mail.com'
+  const addressPlaceholder = user?.address || 'Vd: Số nhà, tên đường, quận/huyện'
+  const birthYearPlaceholder = user && (user as any).birthYear ? String((user as any).birthYear) : 'Vd: 1990'
 
 
   useEffect(() => {
@@ -157,7 +180,48 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
     if (!patientName.trim()) return setError("Vui lòng nhập họ tên bệnh nhân.");
     if (!phone.trim()) return setError("Vui lòng nhập số điện thoại.");
     if (!birthYear.trim()) return setError("Vui lòng nhập năm sinh.");
-    
+    const { user } = useAuthStore.getState()
+    if (!user || !user.id) {
+      toast.error('Vui lòng đăng nhập để đặt lịch')
+      return
+    }
+
+    if (!timeSlot) return setError('Vui lòng chọn khung giờ')
+
+    setSubmitting(true)
+    try {
+      const payload = {
+        patientId: user.id,
+        doctorId: Number(doctorId),
+        date,
+        timeSlot,
+        reason: reason || 'Đặt khám',
+      }
+
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        const msg = typeof data?.message === 'string'
+          ? data.message
+          : 'Lỗi khi đặt lịch';
+        toast.error(msg)
+        setSubmitting(false)
+        return
+      }
+      // setSuccessMessage('Đặt lịch thành công')
+      toast.success('Đặt lịch thành công')
+      // Optionally redirect to user's bookings
+    } catch (err: any) {
+      console.error(err)
+      setError(err?.message || 'Lỗi khi đặt lịch')
+      toast.error(err?.message || 'Lỗi khi đặt lịch')
+    } finally {
+      setSubmitting(false)
+    }
   };
 
  if (loading) {
@@ -235,10 +299,10 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
             <label htmlFor="patientName" className="block text-sm font-medium text-gray-700">Họ tên bệnh nhân (bắt buộc)</label>
             <input 
               id="patientName"
-              placeholder="Vd: Trần Văn Phú"
+              placeholder={namePlaceholder}
               value={patientName} 
               onChange={(e) => setPatientName(e.target.value)} 
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-400 focus:border-blue-400" 
+              className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-400 focus:border-blue-400 placeholder-gray-400"
             />
             <p className="mt-1 text-xs text-gray-500">Hãy ghi rõ họ và tên, viết hoa những chữ cái đầu tiên.</p>
           </div>
@@ -260,9 +324,10 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
             <input 
               id="phone"
               type="tel"
+              placeholder={phonePlaceholder}
               value={phone} 
               onChange={(e) => setPhone(e.target.value)} 
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-400 focus:border-blue-400" 
+              className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-400 focus:border-blue-400 placeholder-gray-400"
             />
           </div>
 
@@ -271,9 +336,10 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
             <input 
               id="email"
               type="email"
+              placeholder={emailPlaceholder}
               value={email} 
               onChange={(e) => setEmail(e.target.value)} 
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-400 focus:border-blue-400" 
+              className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-400 focus:border-blue-400 placeholder-gray-400"
             />
           </div>
 
@@ -282,10 +348,10 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
             <input 
               id="birthYear"
               type="number"
-              placeholder="Vd: 1990"
+              placeholder={birthYearPlaceholder}
               value={birthYear} 
               onChange={(e) => setBirthYear(e.target.value)} 
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-400 focus:border-blue-400" 
+              className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-400 focus:border-blue-400 placeholder-gray-400"
             />
           </div>
 
@@ -329,9 +395,10 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
             <label htmlFor="address" className="block text-sm font-medium text-gray-700">Địa chỉ</label>
             <input 
               id="address"
+              placeholder={addressPlaceholder}
               value={address} 
               onChange={(e) => setAddress(e.target.value)} 
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+              className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
             />
           </div>
 

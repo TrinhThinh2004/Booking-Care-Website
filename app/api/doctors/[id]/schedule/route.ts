@@ -55,9 +55,9 @@ export async function GET(
       return NextResponse.json({ error: 'Doctor not found' }, { status: 404 });
     }
 
-    // If start param is provided, return a range of dates (start + days)
+    
     if (start) {
-      const days = Number(daysParam || '6'); // default today + next 5 => 6 days
+      const days = Number(daysParam || '6'); 
       const startDate = toDateString(start);
       const dates = Array.from({ length: days }, (_, i) => {
         const d = new Date(startDate);
