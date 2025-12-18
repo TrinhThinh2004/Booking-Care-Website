@@ -59,6 +59,7 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
     }, [user]);
   const [reason, setReason] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<string>("cash");
+  const [bankCode, setBankCode] = useState<string | null>(null)
   
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -212,9 +213,33 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
         setSubmitting(false)
         return
       }
-      // setSuccessMessage('Đặt lịch thành công')
+      // Booking created successfully
       toast.success('Đặt lịch thành công')
-      // Optionally redirect to user's bookings
+
+      // If user chose VNPay, create payment URL and redirect
+      if (paymentMethod === 'vnpay') {
+        try {
+          const bookingId = data?.data?.booking?.id ?? data?.data?.bookingId ?? data?.booking?.id
+          const amount = doctor?.price ?? 0
+          const createRes = await fetch('/api/vnpay/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bookingId, amount, bankCode }),
+          })
+          const createData = await createRes.json()
+          if (createRes.ok && createData?.url) {
+            // open in new tab to preserve current app state
+            window.open(createData.url, '_blank')
+            // optionally redirect user to a booking details page
+          } else {
+            toast.error('Tạo liên kết thanh toán thất bại')
+            console.warn('vnpay create failed', createData)
+          }
+        } catch (err) {
+          console.error('Error creating vnpay link', err)
+          toast.error('Lỗi khi tạo link thanh toán')
+        }
+      }
     } catch (err: any) {
       console.error(err)
       setError(err?.message || 'Lỗi khi đặt lịch')
@@ -416,8 +441,8 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
 
         <div>
           <p className="text-sm font-semibold text-gray-700">Hình thức thanh toán</p>
-          <p className="text-xs text-gray-500 mb-2">Thanh toán sau tại cơ sở y tế</p>
-          <div className="mt-1 flex gap-4">
+          <p className="text-xs text-gray-500 mb-2">Bạn có thể chọn thanh toán sau (tại cơ sở) hoặc thanh toán trực tuyến bằng VNPAY</p>
+          <div className="mt-1 flex gap-4 items-start flex-col md:flex-row">
             <label className="flex items-center gap-2">
               <input 
                 type="radio" 
@@ -428,7 +453,31 @@ export default function BookingForm({ doctorId }: { doctorId: string }) {
               /> 
               Thanh toán sau
             </label>
+
+            <label className="flex items-center gap-2">
+              <input 
+                type="radio" 
+                name="paymentMethod" 
+                checked={paymentMethod === 'vnpay'} 
+                onChange={() => setPaymentMethod('vnpay')} 
+                className="form-radio"
+              /> 
+              Thanh toán bằng VNPAY (trực tuyến)
+            </label>
           </div>
+
+          {/* {paymentMethod === 'vnpay' && (
+            <div className="mt-2">
+              <label className="block text-sm text-gray-600">Ngân hàng (tùy chọn)</label>
+              <input
+                value={bankCode ?? ''}
+                onChange={(e) => setBankCode(e.target.value || null)}
+                placeholder="Ví dụ: NCB, VCB, ... (để trống dùng mặc định)"
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              />
+              <p className="text-xs text-gray-400 mt-1">Bạn sẽ được chuyển tới cổng VNPAY để hoàn tất thanh toán.</p>
+            </div>
+          )} */}
         </div>
 
   <div className="bg-gray-50 p-3 rounded-md space-y-2 border">
