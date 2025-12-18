@@ -41,17 +41,18 @@ export const AboutSection = () => {
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+          {/* Text Content */}
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
               Về Booking Care
             </h2>
             <p className="text-lg text-gray-600 mb-6">
-              Booking Care là nền tảng đặt lịch khám bệnh trực tuyến hàng đầu Việt Nam, 
-              kết nối bệnh nhân với đội ngũ bác sĩ chuyên khoa giàu kinh nghiệm từ các 
+              Booking Care là nền tảng đặt lịch khám bệnh trực tuyến hàng đầu Việt Nam,
+              kết nối bệnh nhân với đội ngũ bác sĩ chuyên khoa giàu kinh nghiệm từ các
               bệnh viện và phòng khám uy tín.
             </p>
             <p className="text-lg text-gray-600 mb-8">
-              Với sứ mệnh mang đến dịch vụ y tế chất lượng cao, tiện lợi và đáng tin cậy, 
+              Với sứ mệnh mang đến dịch vụ y tế chất lượng cao, tiện lợi và đáng tin cậy,
               chúng tôi cam kết đồng hành cùng bạn trong hành trình chăm sóc sức khỏe.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 ">
@@ -66,32 +67,17 @@ export const AboutSection = () => {
               </Button>
             </div>
           </div>
-          
-          <div className="relative">
-            <div className="bg-linear-to-br from-[#92D7EE] to-[#4B6CB7] rounded-2xl p-8 text-white">
-              <h3 className="text-2xl font-bold mb-4">Tại sao chọn Booking Care?</h3>
-              <ul className="space-y-3">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
-                  Đặt lịch khám nhanh chóng, tiện lợi 24/7
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
-                  Đội ngũ bác sĩ chuyên khoa hàng đầu
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
-                  Hệ thống phòng khám đối tác uy tín
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
-                  Bảo mật thông tin tuyệt đối
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
-                  Hỗ trợ khách hàng 24/7
-                </li>
-              </ul>
+
+          {/* Image Only Section */}
+          <div className="relative h-full">
+            <div
+              // Đã xóa p-8, text-white và các comment bên trong.
+              // Thêm h-full, min-h-[400px] để đảm bảo ảnh có chiều cao khi không có nội dung.
+              // Thêm shadow-lg cho đẹp mắt hơn.
+              className="rounded-2xl bg-cover bg-center shadow-lg h-full min-h-[400px]"
+              style={{ backgroundImage: "url('/images/background2.jpg')" }}
+            >
+              {/* Khu vực này giờ hoàn toàn trống */}
             </div>
           </div>
         </div>
@@ -126,7 +112,7 @@ export const AboutSection = () => {
               Những con số ấn tượng phản ánh sự tin tưởng của cộng đồng
             </p>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Calendar, Clock, Search } from 'lucide-react'
+import { Calendar, Clock, Search, Key } from 'lucide-react'
 
 type Props = {
   pathname: string
@@ -12,6 +12,7 @@ export default function SideNav({ pathname }: Props) {
     { to: '/dashboard', label: 'Tổng quan', icon: <Clock /> },
     // { to: '/dashboard/booking', label: 'Đặt lịch khám', icon: <Calendar /> },
     { to: '/dashboard/my-bookings', label: 'Lịch hẹn của tôi', icon: <Calendar /> },
+    { to: '/dashboard/change-password', label: 'Đổi mật khẩu', icon: <Key /> },
   ]
 
   return (

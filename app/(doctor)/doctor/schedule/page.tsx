@@ -84,7 +84,8 @@ export default function DoctorSchedule() {
     try {
       const payload = {
         date: dateStr,
-        timeSlots: timeSlots.map(s => ({ id: s.id, isAvailable: s.isAvailable })),
+        timeSlots: timeSlots.map(s => ({ id: s.id, time: s.time, isAvailable: s.isAvailable })),
+
       }
       const updated = await updateSchedule(doctorId, payload)
 

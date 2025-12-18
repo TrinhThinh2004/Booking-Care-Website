@@ -5,17 +5,15 @@ import DB from '../../../lib/database/models'
 export async function GET() {
   try {
     const clinics = await DB.Clinic.findAll({
-      where: {
-        isActive: true
-      },
       attributes: [
-        'id', 
-        'name', 
-        'address', 
+        'id',
+        'name',
+        'address',
         'phone',
         'image',
         'operatingHours',
-        'description'
+        'description',
+        'isActive'
       ],
       include: [
         {
@@ -52,7 +50,9 @@ export async function GET() {
         description: clinic.description,
         specialties: uniqueSpecialties.map(s => s.name),
         rating: 4.8, // Mock rating
-        reviewCount: 200 // Mock review count
+        reviewCount: 200, // Mock review count
+        isActive: clinic.isActive,
+        doctorsCount: (clinic.doctors || []).length
       }
     })
 

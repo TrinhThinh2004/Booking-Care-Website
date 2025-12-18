@@ -188,7 +188,7 @@ export default function DoctorBookingCard({ doctor, initialDate, initialTime }: 
             )}
           </div>
           <p className="text-xs text-gray-600 mt-3">
-            Chọn 📅 và đặt (Phí đặt lịch 0đ)
+            Chọn lịch và đặt (Phí đặt lịch 0đ)
           </p>
             <div className="space-y-2 mt-4">
               <div className="border-t pt-2">

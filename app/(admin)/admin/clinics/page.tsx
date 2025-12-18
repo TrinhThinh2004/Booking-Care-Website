@@ -133,20 +133,19 @@ export default function ClinicsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Địa chỉ</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Số bác sĩ</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center">
+                    <td colSpan={6} className="px-6 py-8 text-center">
                       <LoadingSpinner size="lg" />
                     </td>
                   </tr>
                 ) : clinics.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">Chưa có phòng khám</td>
+                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">Chưa có phòng khám</td>
                   </tr>
                 ) : (
                   clinics.map((clinic: any) => (
@@ -164,10 +163,7 @@ export default function ClinicsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{clinic.name}</td>
                       <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{clinic.address || '-'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{clinic.doctors?.length ?? 0}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${clinic.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{clinic.isActive ? 'Đang hoạt động' : 'Tạm đóng'}</span>
-                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{clinic.doctorsCount ?? 0}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
 
