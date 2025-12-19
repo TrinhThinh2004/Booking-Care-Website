@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/stores/auth/authStore'
@@ -6,11 +6,15 @@ import { useRouter } from 'next/navigation'
 import { Users, Calendar, Stethoscope, Building2, BarChart3, ChevronRight, Settings ,Cross} from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import AdminLayout from '@/app/(admin)/admin/AdminLayout'
+import { useAdminStats } from '@/lib/hooks/useAdminStats'
 
 export default function AdminPage() {
   const { user, isAuthenticated } = useAuthStore()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
+
+  // call admin stats hook unconditionally (before any early returns)
+  const { data: statsData, isLoading: statsLoading } = useAdminStats()
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'ADMIN') {
@@ -28,12 +32,11 @@ export default function AdminPage() {
     return null
   }
 
-  // Mock data - trong thực tế sẽ lấy từ API
-  const stats = {
-    totalUsers: 1234,
-    todayBookings: 45,
-    activeDoctors: 89,
-    totalClinics: 12,
+  const stats = statsData || {
+    totalUsers: 0,
+    todayBookings: 0,
+    activeDoctors: 0,
+    totalClinics: 0,
   }
 
   const quickLinks = [

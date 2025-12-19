@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       where: whereClause,
       order: [['createdAt', 'ASC']],
       include: [
-        { model: DB.User, as: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] },
+        { model: DB.User, as: 'user', attributes: ['id', 'firstName', 'lastName', 'email', 'isActive'] },
         { model: DB.Specialty, as: 'specialty', attributes: ['id', 'name'] },
         { model: DB.Clinic, as: 'clinic', attributes: ['id', 'name'] },
       ],

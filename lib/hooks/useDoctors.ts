@@ -78,7 +78,7 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
             userId: userObj.id || plain.userId || null,
             description: plain.description || '',
             image: plain.image || userObj.image || '',
-            isActive: plain.isActive ?? true,
+            isActive: (userObj && typeof userObj.isActive !== 'undefined') ? Boolean(userObj.isActive) : (plain.isActive ?? true),
             yearsOfExperience: plain.yearsOfExperience ?? plain.yearOfExperience ?? 0,
             createdAt: plain.createdAt,
           }
