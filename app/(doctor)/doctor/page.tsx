@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import DoctorLayout from '@/app/(doctor)/doctor/DoctorLayout'
 import { Card } from '@/components/ui/Card'
 import { useAuthStore } from '@/stores/auth/authStore'
 import { Calendar, Clock, User as UserIcon, CheckCircle, MapPin } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { useDoctors } from '@/lib/hooks/useDoctors'
 
 type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
 
@@ -19,23 +20,41 @@ interface Booking {
   status: BookingStatus
   createdAt: string
   patient?: { firstName?: string; lastName?: string; email?: string }
+  clinic?: { name?: string; address?: string }
+  doctor?: { clinic?: { name?: string } }
 }
+
 
 export default function DoctorDashboard() {
   const { user, isAuthenticated } = useAuthStore()
   const [isLoading, setIsLoading] = useState(true)
   const [bookings, setBookings] = useState<Booking[]>([])
 
+  const { doctors, isLoading: isLoadingDoctor } = useDoctors()
+
+  const currentDoctorId = useMemo(() => {
+    if (!user) return null
+    if (user.doctorId) return String(user.doctorId)
+    if (!doctors) return null
+    const currentDoc = doctors.find((d: any) => Number(d.userId) === Number(user.id))
+    return currentDoc ? String(currentDoc.id) : null
+  }, [user, doctors])
+
   useEffect(() => {
     if (!isAuthenticated) return
-    fetchBookings()
-      .finally(() => setIsLoading(false))
-  }, [isAuthenticated, user?.doctorId])
+    if (isLoadingDoctor && !currentDoctorId) return
+    if (!isLoadingDoctor && !currentDoctorId) {
+      setIsLoading(false)
+      return
+    }
+    if (currentDoctorId) {
+      fetchBookings(currentDoctorId).finally(() => setIsLoading(false))
+    }
+  }, [isAuthenticated, currentDoctorId, isLoadingDoctor])
 
-  const fetchBookings = async () => {
-    if (!user?.doctorId) return
+  const fetchBookings = async (id: string) => {
     try {
-      const res = await fetch(`/api/bookings?doctorId=${user.doctorId}`)
+      const res = await fetch(`/api/bookings?doctorId=${id}`)
       const json = await res.json()
       if (json.success) setBookings(json.data || [])
     } catch (err) {
@@ -43,7 +62,7 @@ export default function DoctorDashboard() {
     }
   }
 
-  if (isLoading) return <LoadingSpinner />
+  if (isLoading || (isLoadingDoctor && !currentDoctorId)) return <LoadingSpinner />
   if (!user) return null
 
   const stats = {
@@ -58,6 +77,12 @@ export default function DoctorDashboard() {
 
   return (
     <DoctorLayout title="Trang chủ">
+      {!currentDoctorId && !isLoadingDoctor && (
+        <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+          Tài khoản này chưa được liên kết hồ sơ bác sĩ. Vui lòng liên hệ quản trị viên.
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6">
           <div className="flex items-center gap-4">
@@ -120,8 +145,7 @@ export default function DoctorDashboard() {
                         </h3>
                         <p className="text-sm text-gray-600">
                           <MapPin className="w-4 h-4 inline mr-1" />
-                          { /* clinic name may not be present in this payload */ }
-                          {'Chưa xác định'}
+                          {booking.clinic?.name || booking.doctor?.clinic?.name || 'Chưa xác định'}
                         </p>
                       </div>
                     </div>
