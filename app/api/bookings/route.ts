@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import DB from '@/lib/database/models'
+import sendMail from '@/lib/email/mailer'
 
 // GET /api/bookings?patientId=...&doctorId=...
 export async function GET(request: NextRequest) {
@@ -106,6 +107,21 @@ export async function POST(request: NextRequest) {
       reason,
       status: 'PENDING',
     })
+
+    // send confirmation email to patient
+    try {
+      const patientEmail = patient.email
+      const timeText = slots[slotIndex].time || timeSlot
+      const html = `
+        <p>Xin chào ${patient.firstName || ''},</p>
+        <p>Bạn đã đặt lịch khám thành công tại <b>${clinic.name}</b> vào <b>${dateStr} ${timeText}</b>.</p>
+        <p>Mã lịch: <b>${booking.id}</b></p>
+        <p>Chúng tôi sẽ thông báo khi bác sĩ xác nhận lịch này.</p>
+      `
+      await sendMail({ to: patientEmail, subject: 'Xác nhận đặt lịch khám', html })
+    } catch (err) {
+      console.error('Error sending booking confirmation email', err)
+    }
 
     return NextResponse.json({ success: true, message: 'Đặt lịch thành công', data: { booking } }, { status: 201 })
   } catch (error: any) {

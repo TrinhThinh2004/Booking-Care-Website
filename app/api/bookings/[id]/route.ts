@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import DB from '@/lib/database/models'
+import sendMail from '@/lib/email/mailer'
 
 // GET /api/bookings/:id
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -30,10 +31,28 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const booking = await DB.Booking.findByPk(Number(id))
     if (!booking) return NextResponse.json({ success: false, message: 'Không tìm thấy booking' }, { status: 404 })
 
+    const prevStatus = booking.status
     if (status) booking.status = status
     if (notes !== undefined) booking.notes = notes
 
     await booking.save()
+
+    // if booking confirmed, notify patient by email
+    try {
+      if (status === 'CONFIRMED' && prevStatus !== 'CONFIRMED') {
+        const patient = await DB.User.findByPk(booking.patientId)
+        if (patient && patient.email) {
+          const html = `
+            <p>Xin chào ${patient.firstName || ''},</p>
+            <p>Lịch khám của bạn vào <b>${booking.date} ${booking.timeSlot}</b> đã được bác sĩ xác nhận.</p>
+            <p>Mã lịch: <b>${booking.id}</b></p>
+          `
+          await sendMail({ to: patient.email, subject: 'Lịch khám đã được xác nhận', html })
+        }
+      }
+    } catch (err) {
+      console.error('Error sending booking confirmation to patient', err)
+    }
 
     return NextResponse.json({ success: true, message: 'Cập nhật booking thành công', data: booking })
   } catch (error: any) {
