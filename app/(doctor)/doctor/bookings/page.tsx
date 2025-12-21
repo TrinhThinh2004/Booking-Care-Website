@@ -4,7 +4,7 @@ import DoctorLayout from '@/app/(doctor)/doctor/DoctorLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useAuthStore } from '@/stores/auth/authStore'
 import { useDoctors } from '@/lib/hooks/useDoctors'
 import { Loader2 } from 'lucide-react'
@@ -39,6 +39,8 @@ export default function DoctorAppointments() {
   const [activeTab, setActiveTab] = useState<BookingStatus>('PENDING')
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [uploadingId, setUploadingId] = useState<number | null>(null)
 
   useEffect(() => {
     if (!doctorId) return
@@ -115,6 +117,36 @@ export default function DoctorAppointments() {
     } catch (error: any) {
       console.error(error)
       toast.error(error.message || 'Lỗi khi hoàn thành')
+    }
+  }
+
+  const handleUploadClick = (bookingId: number) => {
+    setUploadingId(bookingId)
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: any) => {
+    const file = e.target.files?.[0]
+    if (!file || !uploadingId) return
+    const bookingId = uploadingId
+    const fd = new FormData()
+    fd.append('file', file)
+    try {
+      toast.loading('Đang tải đơn thuốc...')
+      const res = await fetch(`/api/multer/bookings/${bookingId}`, {
+        method: 'POST',
+        body: fd,
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Lỗi khi tải lên')
+      setBookings(bookings.map(b => b.id === bookingId ? { ...b, status: 'COMPLETED' } : b))
+      toast.success('Đã gửi đơn thuốc cho bệnh nhân')
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message || 'Lỗi khi tải đơn thuốc')
+    } finally {
+      setUploadingId(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -214,6 +246,12 @@ export default function DoctorAppointments() {
                         Hoàn thành
                       </Button>
                       <Button
+                        onClick={() => handleUploadClick(booking.id)}
+                        className="bg-green-500 hover:bg-green-600"
+                      >
+                        Gửi đơn thuốc
+                      </Button>
+                      <Button
                         onClick={() => handleCancel(booking.id)}
                         variant="outline"
                         className="text-red-600 border-red-600 hover:bg-red-50"
@@ -228,6 +266,13 @@ export default function DoctorAppointments() {
           </div>
         )}
       </Card>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,image/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
     </DoctorLayout>
   )
 }

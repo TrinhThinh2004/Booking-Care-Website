@@ -5,6 +5,7 @@ type MailOptions = {
   subject: string
   html?: string
   text?: string
+  attachments?: Array<{ filename: string; path?: string; content?: Buffer | string }>
 }
 
 let transporter: ReturnType<typeof nodemailer.createTransport> | null = null
@@ -27,7 +28,11 @@ export async function sendMail(opts: MailOptions) {
   try {
     const t = getTransporter()
     const from = process.env.EMAIL_FROM || process.env.SMTP_USER || 'no-reply@example.com'
-    await t.sendMail({ from, to: opts.to, subject: opts.subject, html: opts.html, text: opts.text })
+    const mailOpts: any = { from, to: opts.to, subject: opts.subject }
+    if (opts.html) mailOpts.html = opts.html
+    if (opts.text) mailOpts.text = opts.text
+    if (opts.attachments) mailOpts.attachments = opts.attachments
+    await t.sendMail(mailOpts)
   } catch (err) {
     console.error('Send mail error', err)
   }
