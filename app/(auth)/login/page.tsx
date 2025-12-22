@@ -130,6 +130,9 @@ export default function LoginPage() {
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
                 )}
+                <div className="mt-2 text-right">
+                  <Link href="/forgot" className="text-sm text-[#92D7EE] hover:text-[#70c7e0]">Quên mật khẩu?</Link>
+                </div>
               </div>
 
               <Button
