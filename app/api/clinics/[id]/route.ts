@@ -3,10 +3,10 @@ import DB from '../../../../lib/database/models'
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const clinicId = parseInt(id)
 
     if (isNaN(clinicId)) {
@@ -67,9 +67,9 @@ export async function GET(
 }
 
 // PUT - update clinic
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
     const clinicId = parseInt(id)
     if (isNaN(clinicId)) return NextResponse.json({ success: false, message: 'ID không hợp lệ' }, { status: 400 })
 
@@ -97,9 +97,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // DELETE - remove clinic (soft delete by default)
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
     const clinicId = parseInt(id)
     if (isNaN(clinicId)) return NextResponse.json({ success: false, message: 'ID không hợp lệ' }, { status: 400 })
 

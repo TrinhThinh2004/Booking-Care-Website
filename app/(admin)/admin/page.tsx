@@ -127,28 +127,39 @@ export default function AdminPage() {
       <div className="rounded-xl border border-neutral-200 bg-white p-4">
         <h2 className="mb-3 text-base font-extrabold">Lịch hẹn gần đây</h2>
         <ul className="divide-y">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <li
-              key={i}
-              className="flex items-center justify-between py-3 cursor-pointer hover:bg-neutral-50 rounded-lg px-2"
-              onClick={() => router.push('/admin/bookings')}
-            >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">
-                  Lịch hẹn #{1000 + i} • Bác sĩ Nguyễn Văn A • Khám tổng quát
-                </p>
-                <p className="text-xs text-neutral-600">
-                  Bệnh nhân: Nguyễn Văn B • 09xx xxx xxx
-                </p>
-              </div>
-              <div className="ml-3 flex items-center gap-3">
-                <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
-                  Đã xác nhận
-                </span>
-                <ChevronRight className="h-4 w-4 text-neutral-400" />
-              </div>
+          {(stats.recentBookings && stats.recentBookings.length > 0) ? (
+            stats.recentBookings.map((b: any) => (
+              <li
+                key={b.id}
+                className="flex items-center justify-between py-3 cursor-pointer hover:bg-neutral-50 rounded-lg px-2"
+                onClick={() => router.push('/admin/bookings')}
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">
+                    {`Lịch hẹn #${b.id} • ${b.doctor?.user ? `${b.doctor.user.firstName} ${b.doctor.user.lastName}` : 'Bác sĩ'} • ${b.reason || 'Khám'}`}
+                  </p>
+                  <p className="text-xs text-neutral-600">
+                    {`Bệnh nhân: ${b.patient ? `${b.patient.firstName} ${b.patient.lastName}` : 'Không rõ'} • ${b.patient?.email || ''}`}
+                  </p>
+                </div>
+                <div className="ml-3 flex items-center gap-3">
+                  <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                    b.status === 'CONFIRMED' ? 'bg-emerald-50 text-emerald-700' :
+                    b.status === 'PENDING' ? 'bg-yellow-50 text-yellow-700' :
+                    b.status === 'COMPLETED' ? 'bg-blue-50 text-blue-700' :
+                    'bg-red-50 text-red-700'
+                  }`}>
+                    {b.status === 'CONFIRMED' ? 'Đã xác nhận' : b.status === 'PENDING' ? 'Chờ xác nhận' : b.status === 'COMPLETED' ? 'Đã hoàn thành' : 'Đã hủy'}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                </div>
+              </li>
+            ))
+          ) : (
+            <li className="py-3 px-2">
+              <div className="text-sm text-neutral-600">Chưa có lịch hẹn nào.</div>
             </li>
-          ))}
+          )}
         </ul>
       </div>
     </AdminLayout>
