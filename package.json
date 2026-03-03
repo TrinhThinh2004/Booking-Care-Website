@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack",
+    "build": "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "npx sequelize-cli db:migrate",
