@@ -57,9 +57,9 @@ export default async function SpecialtyDoctorsPage({ params, searchParams }: { p
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="py-16 bg-white">
+      <main className="py-8 sm:py-12 lg:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">
             Bác sĩ theo Chuyên khoa
           </h1>
 
@@ -69,7 +69,7 @@ export default async function SpecialtyDoctorsPage({ params, searchParams }: { p
                 Chưa có bác sĩ cho chuyên khoa này
               </div>
             ) : (
-  
+
               displayedDoctors.map((doc: Doctor) => (
                 <DoctorBookingCard
                   key={doc.id}

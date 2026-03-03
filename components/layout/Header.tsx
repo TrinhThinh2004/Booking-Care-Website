@@ -1,21 +1,43 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/stores/auth/authStore'
 import { Button } from '@/components/ui/Button'
-import { User, LogOut, ChevronDown } from 'lucide-react'
+import { User, LogOut, ChevronDown, Menu, X } from 'lucide-react'
 
 export const Header = () => {
   const { user, isAuthenticated, logout } = useAuthStore()
   const router = useRouter()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   const handleLogout = () => {
     logout()
+    setIsMobileMenuOpen(false)
     router.push('/')
   }
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [pathname])
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isMobileMenuOpen])
 
   const navigation = [
     { name: 'Trang chủ', href: '/' },
@@ -26,15 +48,16 @@ export const Header = () => {
   ]
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50" ref={mobileMenuRef}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          
+
+          {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <svg
                 viewBox="0 0 666.63 146.21"
-                className="w-[200px] h-[43px] select-none"
+                className="w-[150px] h-[33px] sm:w-[200px] sm:h-[43px] select-none"
               >
                 <path
                   d="M73.11 41.43a31.68 31.68 0 1 0 31.68 31.68 31.68 31.68 0 0 0-31.68-31.68m19.9 38H79.43v13.65H66.78V79.43H53.21V66.78h13.57V53.13h12.65v13.65H93Z"
@@ -52,70 +75,75 @@ export const Header = () => {
             </Link>
           </div>
 
+          {/* Desktop Nav */}
           <nav className="hidden md:flex space-x-8">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-900 hover:bg-[#F7D800] hover:text-black px-3 py-2 text-sm font-medium transition-colors rounded-md"
+                className={`px-3 py-2 text-sm font-medium transition-colors rounded-md ${pathname === item.href
+                    ? 'bg-[#F7D800] text-black'
+                    : 'text-gray-900 hover:bg-[#F7D800] hover:text-black'
+                  }`}
               >
                 {item.name}
               </Link>
             ))}
           </nav>
 
+          {/* Desktop Auth */}
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="relative">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="flex items-center space-x-2 text-gray-900 hover:bg-[#F7D800] hover:text-black"
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 >
                   <User className="w-5 h-5" />
                   <span className="text-sm font-medium">
                     Xin chào, {user?.firstName}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-gray-700 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-gray-700 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
                 </Button>
-                
-                {isMenuOpen && (
-                  <div 
+
+                {isProfileMenuOpen && (
+                  <div
                     className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50"
-                    onMouseLeave={() => setIsMenuOpen(false)} 
+                    onMouseLeave={() => setIsProfileMenuOpen(false)}
                   >
                     <div className="py-1">
                       <div className="px-4 py-2 text-sm text-gray-700">
                         <p className="font-medium">{user?.firstName} {user?.lastName}</p>
                         <p className="text-xs text-gray-500">{user?.email}</p>
                       </div>
-                      
+
                       <hr className="my-1" />
-                      
+
                       <Link
                         href="/dashboard"
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={() => setIsProfileMenuOpen(false)}
                       >
-                        Cá nhân 
+                        Cá nhân
                       </Link>
-                      
+
                       {user?.role === 'ADMIN' && (
                         <Link
                           href="/admin"
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsMenuOpen(false)}
+                          onClick={() => setIsProfileMenuOpen(false)}
                         >
                           Quản trị
                         </Link>
                       )}
-                      
+
                       <hr className="my-1" />
-                      
+
                       <button
                         onClick={() => {
                           handleLogout();
-                          setIsMenuOpen(false);
+                          setIsProfileMenuOpen(false);
                         }}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                       >
@@ -129,16 +157,16 @@ export const Header = () => {
             ) : (
               <div className="flex items-center space-x-2">
                 <Link href="/login">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="text-gray-900 hover:bg-[#F7D800] hover:text-black"
                   >
                     Đăng nhập
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button 
+                  <Button
                     size="sm"
                     variant="ghost"
                     className="text-gray-900 hover:bg-[#F7D800] hover:text-black"
@@ -149,7 +177,91 @@ export const Header = () => {
               </div>
             )}
           </div>
-          
+
+          {/* Mobile hamburger button */}
+          <button
+            className="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
+      >
+        <div className="border-t border-gray-200 bg-white px-4 py-3 space-y-1">
+          {navigation.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`block px-3 py-2.5 text-base font-medium rounded-md transition-colors ${pathname === item.href
+                  ? 'bg-[#F7D800] text-black'
+                  : 'text-gray-900 hover:bg-gray-100'
+                }`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              {item.name}
+            </Link>
+          ))}
+
+          <hr className="my-2" />
+
+          {isAuthenticated ? (
+            <div className="space-y-1">
+              <div className="px-3 py-2 text-sm text-gray-500">
+                Xin chào, <span className="font-medium text-gray-900">{user?.firstName} {user?.lastName}</span>
+              </div>
+              <Link
+                href="/dashboard"
+                className="block px-3 py-2.5 text-base font-medium text-gray-900 hover:bg-gray-100 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Cá nhân
+              </Link>
+              {user?.role === 'ADMIN' && (
+                <Link
+                  href="/admin"
+                  className="block px-3 py-2.5 text-base font-medium text-gray-900 hover:bg-gray-100 rounded-md"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Quản trị
+                </Link>
+              )}
+              <button
+                onClick={handleLogout}
+                className="block w-full text-left px-3 py-2.5 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 pt-1">
+              <Link
+                href="/login"
+                className="block text-center px-4 py-2.5 text-base font-medium text-gray-900 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Đăng nhập
+              </Link>
+              <Link
+                href="/register"
+                className="block text-center px-4 py-2.5 text-base font-medium text-gray-900 bg-[#F7D800] rounded-md hover:bg-[#e5c900] transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Đăng ký
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>

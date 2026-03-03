@@ -70,19 +70,19 @@ export const DoctorList = () => {
 
   const handleBookAppointment = (doctorId: number, e: React.MouseEvent) => {
     e.stopPropagation()
-   const doc = doctors.find(d => d.id === doctorId)
-   const specialtyId = (doc as any)?.specialty?.id ?? (doc as any)?.specialtyId
-   const getLocalDateString = (date: Date) => {
-     const offset = date.getTimezoneOffset() * 60000
-     const local = new Date(date.getTime() - offset)
-     return local.toISOString().split('T')[0]
-   }
-   const today = getLocalDateString(new Date())
-   if (specialtyId) {
-     router.push(`/specialties/${specialtyId}?doctorId=${doctorId}&date=${today}`)
-     return
-   }
-   router.push(`/doctors/${doctorId}/booking`)
+    const doc = doctors.find(d => d.id === doctorId)
+    const specialtyId = (doc as any)?.specialty?.id ?? (doc as any)?.specialtyId
+    const getLocalDateString = (date: Date) => {
+      const offset = date.getTimezoneOffset() * 60000
+      const local = new Date(date.getTime() - offset)
+      return local.toISOString().split('T')[0]
+    }
+    const today = getLocalDateString(new Date())
+    if (specialtyId) {
+      router.push(`/specialties/${specialtyId}?doctorId=${doctorId}&date=${today}`)
+      return
+    }
+    router.push(`/doctors/${doctorId}/booking`)
   }
 
   if (isLoading) {
@@ -98,26 +98,26 @@ export const DoctorList = () => {
   }
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-8 sm:py-12 lg:py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-6 sm:mb-8 lg:mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Bác sĩ nổi bật
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
             Đội ngũ bác sĩ chuyên khoa hàng đầu với nhiều năm kinh nghiệm
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
-         {([...doctors]
-  .sort((a, b) => {
-    const ay = a.yearsOfExperience ?? 0
-    const by = b.yearsOfExperience ?? 0
-    return by - ay
-  })
-  .slice(0, 4) 
-).map((doctor) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {([...doctors]
+            .sort((a, b) => {
+              const ay = a.yearsOfExperience ?? 0
+              const by = b.yearsOfExperience ?? 0
+              return by - ay
+            })
+            .slice(0, 4)
+          ).map((doctor) => (
 
             <Card
               key={doctor.id}

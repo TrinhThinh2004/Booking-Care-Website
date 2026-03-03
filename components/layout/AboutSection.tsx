@@ -38,28 +38,28 @@ export const AboutSection = () => {
   ]
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-8 sm:py-12 lg:py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-8 sm:mb-12 lg:mb-16">
           {/* Text Content */}
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
               Về Booking Care
             </h2>
-            <p className="text-lg text-gray-600 mb-6">
+            <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">
               Booking Care là nền tảng đặt lịch khám bệnh trực tuyến hàng đầu Việt Nam,
               kết nối bệnh nhân với đội ngũ bác sĩ chuyên khoa giàu kinh nghiệm từ các
               bệnh viện và phòng khám uy tín.
             </p>
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8">
               Với sứ mệnh mang đến dịch vụ y tế chất lượng cao, tiện lợi và đáng tin cậy,
               chúng tôi cam kết đồng hành cùng bạn trong hành trình chăm sóc sức khỏe.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 ">
               <Button
-                 variant="ghost"
-                 className="bg-[#92D7EE] "
-                 onClick={() => router.push('/about')}>
+                variant="ghost"
+                className="bg-[#92D7EE] "
+                onClick={() => router.push('/about')}>
                 Tìm hiểu thêm
               </Button>
               <Button variant="outline" onClick={() => router.push('/contact')}>
@@ -74,7 +74,7 @@ export const AboutSection = () => {
               // Đã xóa p-8, text-white và các comment bên trong.
               // Thêm h-full, min-h-[400px] để đảm bảo ảnh có chiều cao khi không có nội dung.
               // Thêm shadow-lg cho đẹp mắt hơn.
-              className="rounded-2xl bg-cover bg-center shadow-lg h-full min-h-[400px]"
+              className="rounded-2xl bg-cover bg-center shadow-lg h-full min-h-[250px] sm:min-h-[350px] lg:min-h-[400px]"
               style={{ backgroundImage: "url('/images/background2.jpg')" }}
             >
               {/* Khu vực này giờ hoàn toàn trống */}
@@ -83,7 +83,7 @@ export const AboutSection = () => {
         </div>
 
         {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-12 lg:mb-16">
           {features.map((feature, index) => {
             const Icon = feature.icon
             return (
@@ -103,7 +103,7 @@ export const AboutSection = () => {
         </div>
 
         {/* Stats */}
-        <div className="bg-[#EFEFEF] rounded-2xl p-8 shadow-lg">
+        <div className="bg-[#EFEFEF] rounded-2xl p-6 sm:p-8 shadow-lg">
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
               Thành tựu của chúng tôi
@@ -113,7 +113,7 @@ export const AboutSection = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="text-3xl md:text-4xl font-bold text-[#92D7EE] mb-2">

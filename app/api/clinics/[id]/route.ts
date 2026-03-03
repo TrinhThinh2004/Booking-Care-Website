@@ -27,6 +27,7 @@ export async function GET(
         'address',
         'phone',
         'image',
+        'description',
         'operatingHours'
       ],
       include: [{

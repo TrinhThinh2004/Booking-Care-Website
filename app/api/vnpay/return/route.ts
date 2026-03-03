@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import qs from 'qs';
 import DB from '@/lib/database/models';
 
-// Helper sort (cần giống hệt bên Create)
+// Helper sort
 function sortObject(obj: any) {
     let sorted: any = {};
     let str = [];
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         if (responseCode === '00') {
             
             if (booking.status !== 'CONFIRMED' && booking.status !== 'COMPLETED') {
-                booking.status = 'CONFIRMED'; 
+                booking.status = 'PENDING'; 
                 booking.paymentInfo = JSON.stringify(vnp_Params); 
                 await booking.save();
             }

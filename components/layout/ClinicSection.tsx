@@ -25,7 +25,7 @@ export const ClinicSection = () => {
   const { data, isLoading } = useClinics()
 
   const clinics = data?.clinics || []
-  
+
   const handleClinicClick = (clinicId: number) => {
     router.push(`/clinics/${clinicId}`)
   }
@@ -44,31 +44,31 @@ export const ClinicSection = () => {
   }
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-8 sm:py-12 lg:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-6 sm:mb-8 lg:mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Phòng khám & Bệnh viện
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
             Hệ thống phòng khám và bệnh viện uy tín với trang thiết bị hiện đại
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {clinics.slice(0, 3).map((clinic :any) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {clinics.slice(0, 3).map((clinic: any) => (
             <Card
               key={clinic.id}
               className="hover:shadow-lg transition-all duration-200 cursor-pointer group overflow-hidden flex flex-col"
               onClick={() => handleClinicClick(clinic.id)}
             >
-           
-              <div className="h-40 w-full bg-white p-4 border-b"> 
+
+              <div className="h-40 w-full bg-white p-4 border-b">
                 {clinic.image ? (
                   <img
-                   src={clinic.image} 
-      alt={clinic.name}
-                    className="w-full h-full object-contain" 
+                    src={clinic.image}
+                    alt={clinic.name}
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <div className="h-full bg-linear-to-rrom-[#92D7EE] to-[#4B6CB7] flex items-center justify-center rounded-lg">
@@ -78,10 +78,10 @@ export const ClinicSection = () => {
                   </div>
                 )}
               </div>
-              
-  
-              <CardContent className="p-6 flex flex-col grow"> 
-                
+
+
+              <CardContent className="p-6 flex flex-col grow">
+
                 <h3 className="text-xl font-semibold text-gray-900 mb-4 line-clamp-2">
                   {clinic.name}
                 </h3>
@@ -91,17 +91,17 @@ export const ClinicSection = () => {
                     <MapPin className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
                     <span className="line-clamp-2">{clinic.address}</span>
                   </div>
-                  
+
                   <div className="flex items-center text-sm text-gray-600">
                     <Phone className="w-4 h-4 mr-2" />
                     <span>{clinic.phone}</span>
                   </div>
-                  
+
                   <div className="flex items-center text-sm text-gray-600">
                     <Clock className="w-4 h-4 mr-2" />
                     <span>{clinic.operatingHours}</span>
                   </div>
-                  
+
                   <div className="flex items-center text-sm text-gray-600">
                     <Star className="w-4 h-4 mr-2 text-yellow-400 fill-current" />
                     <span>{clinic.rating} ({clinic.reviewCount} đánh giá)</span>
@@ -114,7 +114,7 @@ export const ClinicSection = () => {
                     {clinic.specialties.map((specialty: string, index: number) => (
                       <span
                         key={index}
-                        className="px-2 py-1 bg-[#EFEFEF] text-xs text-black rounded-full font-medium" 
+                        className="px-2 py-1 bg-[#EFEFEF] text-xs text-black rounded-full font-medium"
                       >
                         {specialty}
                       </span>
@@ -124,7 +124,7 @@ export const ClinicSection = () => {
 
                 <Button
                   variant="ghost"
-                  className="w-full transition-colors mt-auto bg-[#92D7EE] " 
+                  className="w-full transition-colors mt-auto bg-[#92D7EE] "
                 >
                   Xem chi tiết
                 </Button>

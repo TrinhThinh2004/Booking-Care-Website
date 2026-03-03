@@ -41,12 +41,12 @@ export default function SpecialtiesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">
+      <main className="py-8 sm:py-12 lg:py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">
             Chuyên Khoa
           </h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {specialties.map((specialty) => {
               return (
                 <div
@@ -65,7 +65,7 @@ export default function SpecialtiesPage() {
                   <div className="p-6">
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">{specialty.name}</h2>
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">{specialty.description}</p>
-                     <p className="text-[#92D7EE] text-sm font-medium">
+                    <p className="text-[#92D7EE] text-sm font-medium">
                       {specialty.doctorCount} bác sĩ chuyên khoa
                     </p>
                   </div>

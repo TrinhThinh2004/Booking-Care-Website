@@ -14,7 +14,7 @@ type Props = {
 }
 
 export default function DashboardLayout({ title, actions, children }: Props) {
-  const [isNavOpen, setNavOpen] = useState(true)
+  const [isNavOpen, setNavOpen] = useState(false)
   const [isMenuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { user, logout } = useAuthStore()
@@ -35,20 +35,20 @@ export default function DashboardLayout({ title, actions, children }: Props) {
 
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50">
-      <header className="z-10 flex h-[60px] shrink-0 items-center justify-between gap-4 border-b bg-white px-6">
+      <header className="z-30 flex h-[60px] shrink-0 items-center justify-between gap-4 border-b bg-white px-4 sm:px-6">
         <div className="flex items-center gap-4">
           <Link
             href="/"
             className="flex items-center gap-2"
           >
-            <img 
-              src="/images/logo.png" 
+            <img
+              src="/images/logo.png"
               alt="BookingCare"
-              className="h-8 w-auto" 
+              className="h-8 w-auto"
             />
           </Link>
           <button
-            className="hidden h-9 w-9 place-content-center rounded-md border border-grey lg:grid"
+            className="h-9 w-9 grid place-content-center rounded-md border border-gray-300"
             onClick={() => setNavOpen(!isNavOpen)}
             aria-label="Toggle menu"
           >
@@ -66,9 +66,8 @@ export default function DashboardLayout({ title, actions, children }: Props) {
               Xin chào, {user?.firstName || ''} {user?.lastName || ''}
             </span>
             <ChevronDown
-              className={`h-4 w-4 transition-transform ${
-                isMenuOpen ? 'rotate-180' : 'rotate-0'
-              }`}
+              className={`h-4 w-4 transition-transform ${isMenuOpen ? 'rotate-180' : 'rotate-0'
+                }`}
             />
           </button>
 
@@ -88,18 +87,25 @@ export default function DashboardLayout({ title, actions, children }: Props) {
         </div>
       </header>
 
-      <div className="flex grow overflow-hidden">
+      <div className="flex grow overflow-hidden relative">
+        {/* Mobile sidebar overlay */}
+        {isNavOpen && (
+          <div
+            className="fixed inset-0 bg-black/30 z-20 lg:hidden"
+            onClick={() => setNavOpen(false)}
+          />
+        )}
+
         <aside
-          className={`shrink-0 border-r bg-white transition-[width] duration-300 ease-in-out ${
-            isNavOpen ? 'w-[280px]' : 'w-0'
-          } overflow-y-auto`}
+          className={`fixed lg:relative z-20 h-[calc(100vh-60px)] shrink-0 border-r bg-white transition-all duration-300 ease-in-out ${isNavOpen ? 'w-[260px] sm:w-[280px] translate-x-0' : 'w-0 -translate-x-full lg:translate-x-0'
+            } overflow-y-auto overflow-x-hidden`}
         >
           <div className="p-4">
             <SideNav pathname={pathname ?? ''} />
           </div>
         </aside>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-lg font-bold tracking-wide text-gray-800">{title}</h1>
             {actions ? <div className="shrink-0">{actions}</div> : null}

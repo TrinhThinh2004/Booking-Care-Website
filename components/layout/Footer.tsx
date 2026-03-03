@@ -28,8 +28,8 @@ export const Footer = () => {
 
   return (
     <footer className="bg-[#EFEFEF] text-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Company Info */}
           <div className="lg:col-span-1">
             <div className="mb-4">
@@ -61,15 +61,15 @@ export const Footer = () => {
             <div className="space-y-2">
               <div className="flex items-center space-x-2 text-gray-700">
                 <Phone className="w-4 h-4" />
-                <span>1900 1234</span>
+                <span>+84867919478</span>
               </div>
               <div className="flex items-center space-x-2 text-gray-700">
                 <Mail className="w-4 h-4" />
-                <span>info@bookingcare.vn</span>
+                <span>thinhtt2005@gmail.com</span>
               </div>
               <div className="flex items-center space-x-2 text-gray-700">
                 <MapPin className="w-4 h-4" />
-                <span>Hà Nội, Việt Nam</span>
+                <span>Quận 12,Hồ Chí Minh</span>
               </div>
             </div>
           </div>
@@ -78,16 +78,10 @@ export const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Công ty</h3>
             <ul className="space-y-2">
-              {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-gray-700 hover:text-gray-900 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+              <li><span className="text-gray-700">Về chúng tôi</span></li>
+              <li><Link href="/doctors" className="text-gray-700 hover:text-gray-900 transition-colors">Đội ngũ bác sĩ</Link></li>
+              <li><Link href="/clinics" className="text-gray-700 hover:text-gray-900 transition-colors">Phòng khám</Link></li>
+              <li><span className="text-gray-700">Tin tức</span></li>
             </ul>
           </div>
 
@@ -95,16 +89,10 @@ export const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Dịch vụ</h3>
             <ul className="space-y-2">
-              {footerLinks.services.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-gray-700 hover:text-gray-900 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+              <li><span className="text-gray-700">Đặt lịch khám</span></li>
+              <li><Link href="/specialties" className="text-gray-700 hover:text-gray-900 transition-colors">Chuyên khoa</Link></li>
+              <li><span className="text-gray-700">Khám từ xa</span></li>
+              <li><span className="text-gray-700">Xét nghiệm</span></li>
             </ul>
           </div>
 
@@ -112,16 +100,10 @@ export const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Hỗ trợ</h3>
             <ul className="space-y-2">
-              {footerLinks.support.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-gray-700 hover:text-gray-900 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+              <li><span className="text-gray-700">Trung tâm trợ giúp</span></li>
+              <li><span className="text-gray-700">Liên hệ</span></li>
+              <li><span className="text-gray-700">Chính sách bảo mật</span></li>
+              <li><span className="text-gray-700">Điều khoản sử dụng</span></li>
             </ul>
           </div>
         </div>
@@ -133,12 +115,12 @@ export const Footer = () => {
               © {currentYear} Booking Care. Tất cả quyền được bảo lưu.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link href="/privacy" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
+              <span className="text-gray-600 text-sm">
                 Chính sách bảo mật
-              </Link>
-              <Link href="/terms" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
+              </span>
+              <span className="text-gray-600 text-sm">
                 Điều khoản sử dụng
-              </Link>
+              </span>
             </div>
           </div>
         </div>
