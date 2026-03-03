@@ -117,11 +117,12 @@ export const DoctorList = () => {
               return by - ay
             })
             .slice(0, 4)
-          ).map((doctor) => (
+          ).map((doctor, index) => (
 
             <Card
               key={doctor.id}
-              className="hover:shadow-lg transition-all duration-200 cursor-pointer group"
+              className={`hover:shadow-lg transition-all duration-200 cursor-pointer group ${index >= 2 ? 'hidden sm:block' : ''
+                }`}
               onClick={() => handleDoctorClick(doctor.id)}
             >
               <CardContent className="p-6">

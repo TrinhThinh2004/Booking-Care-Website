@@ -51,11 +51,12 @@ export const Specialty = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {specialties.slice(0, 6).map((specialty) => {
+          {specialties.slice(0, 6).map((specialty, index) => {
             return (
               <Card
                 key={specialty.id}
-                className="hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                className={`hover:shadow-lg transition-all duration-200 cursor-pointer group ${index >= 3 ? 'hidden sm:block' : ''
+                  }`}
                 onClick={() => handleSpecialtyClick(specialty.id)}
               >
                 <CardContent className="p-6">

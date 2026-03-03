@@ -56,10 +56,11 @@ export const ClinicSection = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {clinics.slice(0, 3).map((clinic: any) => (
+          {clinics.slice(0, 3).map((clinic: any, index: number) => (
             <Card
               key={clinic.id}
-              className="hover:shadow-lg transition-all duration-200 cursor-pointer group overflow-hidden flex flex-col"
+              className={`hover:shadow-lg transition-all duration-200 cursor-pointer group overflow-hidden flex flex-col ${index >= 2 ? 'hidden sm:flex' : ''
+                }`}
               onClick={() => handleClinicClick(clinic.id)}
             >
 
