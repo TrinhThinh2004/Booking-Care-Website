@@ -2,9 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['bcryptjs', 'sequelize'],
-    eslint: {
-    ignoreDuringBuilds: true, 
-  },
   typescript: {
   ignoreBuildErrors: true,
 },
