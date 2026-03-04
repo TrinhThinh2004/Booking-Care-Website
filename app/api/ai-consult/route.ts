@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
         // Fetch specialties for AI to match against
         const specialties = await DB.Specialty.findAll({
             where: { isActive: true },
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'image'],
         })
         const specialtyNames = specialties.map((s: any) => s.name).join(', ')
 

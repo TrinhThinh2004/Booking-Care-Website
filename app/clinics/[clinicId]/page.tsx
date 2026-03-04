@@ -15,6 +15,7 @@ interface ClinicDoctor {
 interface ClinicSpecialty {
     id: number
     name: string
+    image?: string
 }
 
 async function getClinicDetailFromDb(clinicId: number) {
@@ -35,7 +36,7 @@ async function getClinicDetailFromDb(clinicId: number) {
                     {
                         model: DB.Specialty,
                         as: 'specialty',
-                        attributes: ['id', 'name'],
+                        attributes: ['id', 'name', 'image'],
                     },
                 ],
             },
@@ -54,15 +55,16 @@ async function getClinicDetailFromDb(clinicId: number) {
         yearsOfExperience: d.yearsOfExperience || 0,
     }))
 
-    const specialtiesMap = new Map<number, string>()
+    const specialtiesMap = new Map<number, { name: string; image?: string }>()
         ; (plain.doctors || []).forEach((d: any) => {
             if (d.specialty) {
-                specialtiesMap.set(d.specialty.id, d.specialty.name)
+                specialtiesMap.set(d.specialty.id, { name: d.specialty.name, image: d.specialty.image })
             }
         })
-    const specialties: ClinicSpecialty[] = Array.from(specialtiesMap.entries()).map(([id, name]) => ({
+    const specialties: ClinicSpecialty[] = Array.from(specialtiesMap.entries()).map(([id, data]) => ({
         id,
-        name,
+        name: data.name,
+        image: data.image,
     }))
 
     return {
@@ -305,8 +307,16 @@ export default async function ClinicDetailPage({
                                         href={`/specialties/${specialty.id}`}
                                         className="flex items-center p-4 bg-white rounded-xl border border-gray-200 hover:border-[#92D7EE] hover:shadow-md transition-all duration-300 group"
                                     >
-                                        <div className="w-10 h-10 rounded-full bg-[#e8f7fc] flex items-center justify-center mr-3 shrink-0 group-hover:bg-[#92D7EE] transition-colors">
-                                            <Stethoscope className="w-5 h-5 text-[#49bce2] group-hover:text-white transition-colors" />
+                                        <div className="w-10 h-10 rounded-full bg-[#e8f7fc] flex items-center justify-center mr-3 shrink-0 overflow-hidden group-hover:bg-[#92D7EE] transition-colors">
+                                            {specialty.image ? (
+                                                <img
+                                                    src={specialty.image}
+                                                    alt={specialty.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <Stethoscope className="w-5 h-5 text-[#49bce2] group-hover:text-white transition-colors" />
+                                            )}
                                         </div>
                                         <span className="font-medium text-gray-900 text-sm sm:text-base group-hover:text-[#49bce2] transition-colors">
                                             {specialty.name}
