@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/stores/auth/AuthProvider'
+import { AiChatWidget } from '@/components/ui/AiChatWidget'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,7 +26,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           {children}
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,
@@ -35,6 +36,7 @@ export default function RootLayout({
               },
             }}
           />
+          <AiChatWidget />
         </AuthProvider>
       </body>
     </html>

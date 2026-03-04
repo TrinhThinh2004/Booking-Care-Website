@@ -82,8 +82,8 @@ export const Header = () => {
                 key={item.name}
                 href={item.href}
                 className={`px-3 py-2 text-sm font-medium transition-colors rounded-md ${pathname === item.href
-                    ? 'bg-[#F7D800] text-black'
-                    : 'text-gray-900 hover:bg-[#F7D800] hover:text-black'
+                  ? 'bg-[#F7D800] text-black'
+                  : 'text-gray-900 hover:bg-[#F7D800] hover:text-black'
                   }`}
               >
                 {item.name}
@@ -205,8 +205,8 @@ export const Header = () => {
               key={item.name}
               href={item.href}
               className={`block px-3 py-2.5 text-base font-medium rounded-md transition-colors ${pathname === item.href
-                  ? 'bg-[#F7D800] text-black'
-                  : 'text-gray-900 hover:bg-gray-100'
+                ? 'bg-[#F7D800] text-black'
+                : 'text-gray-900 hover:bg-gray-100'
                 }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >

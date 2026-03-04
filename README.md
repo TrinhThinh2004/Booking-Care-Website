@@ -1,6 +1,7 @@
 ﻿# BookingCare  Website đặt lịch khám trực tuyến
 
 Một dự án demo/ứng dụng thực tế để quản lý và đặt lịch khám bệnh trực tuyến, xây dựng bằng Next.js, Node.js và MySQL.
+Link:https://booking-care-website.vercel.app/
 
 ## Tính năng chính
 - Đặt lịch khám cho bệnh nhân
@@ -60,8 +61,9 @@ npm run dev
 - `npm run dev`  chạy môi trường phát triển
 - `npm run build`  build cho production
 - `npm start`  chạy production (sau build)
-- `npx sequelize-cli db:migrate`  chạy migration
-- `npx sequelize-cli db:seed:all`  chạy seed
+- `npx sequelize-cli db:migrate`  chạy migration hoặc || `npx sequelize-cli db:migrate --env development `
+- `npx sequelize-cli db:seed:all`  chạy seed || `npx sequelize-cli db:seed:all --env development`
+- `npx sequelize-cli db:migrate:undo:all`  rollback tất cả || `npx sequelize-cli db:migrate:undo:all --env development`
 
 ## API chính
 - `GET /api/bookings`  danh sách lịch hẹn
